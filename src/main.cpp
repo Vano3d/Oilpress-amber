@@ -51,6 +51,7 @@ uint32_t start, stop;
 int16_t val_0;
 
 void setup() {
+  display.showNumber(8888);
   Wire.begin();
   Wire.setClock(100000);
   digitalWrite(BUZZER, HIGH);
