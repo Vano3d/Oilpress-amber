@@ -285,7 +285,7 @@ void loop() {
     ADS.requestADC(0);
     // Serial.print("\tAnalog0: ");
     // Serial.println(val_0);
-    constrain(ADS.getValue()/pressureDivivder,0,1000);
+    pressure = constrain(ADS.getValue()/pressureDivivder,0,1000);
 
   }
 
