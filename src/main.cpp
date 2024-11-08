@@ -1,4 +1,5 @@
 // Программа для отжима масла
+// v 3.1
 #include <Arduino.h>
 #include <GyverIO.h>
 #include <Wire.h>
