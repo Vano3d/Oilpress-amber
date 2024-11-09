@@ -131,7 +131,7 @@ void setup() {
     }
     file.close();
   }
-  // serializeJson(doc, Serial);
+  serializeJson(doc, Serial);
 
   Serial.println();
   delay(100);
@@ -299,10 +299,10 @@ void loop() {
   ElegantOTA.loop();
 
   // находим длину массива выбранной культуры
-  arrayLen = doc[chozenSeed]["value"].size();
+  arrayLen = doc[chozenSeed]["stages"].size();
 
   // находим последний элемент в массиве, он же время окончания (в секундах)
-  endTime = doc[chozenSeed]["value"][arrayLen - 1].as<int>() * 60;
+  endTime = doc[chozenSeed]["stages"][arrayLen - 1]["time"].as<int>() * 60;
 
   // находим оставшееся время процесса отжатия
   timeLeft = (endTime - totalTime);
@@ -509,43 +509,48 @@ void loop() {
 
   // проходимся по массиву культуры и меняем диапазон давлений по времени
 
-  for (int i = 0; i < arrayLen - 3; i = i + 3) {
-    if (totalTime < doc[chozenSeed]["value"][2].as<int>() * 60) {
-      maxPress = doc[chozenSeed]["value"][0].as<int>();
-      minPress = doc[chozenSeed]["value"][1].as<int>();
-    } else if (totalTime >= doc[chozenSeed]["value"][i + 2].as<int>() * 60) {
-      maxPress = doc[chozenSeed]["value"][i + 3];
-      minPress = doc[chozenSeed]["value"][i + 4];
+  for (int i = 0; i < arrayLen; i += 1) {
+    if (totalTime < doc[chozenSeed]["stages"][0]["time"].as<int>() * 60) {
+      maxPress = doc[chozenSeed]["stages"][0]["maxPress"].as<int>();
+      minPress = doc[chozenSeed]["stages"][0]["minPress"].as<int>();
+      maxTemp = doc[chozenSeed]["stages"][0]["maxTemp"].as<int>();
+      minTemp = doc[chozenSeed]["stages"][0]["minTemp"].as<int>();
+    } else if (totalTime >= doc[chozenSeed]["stages"][i]["time"].as<int>() * 60) {
+      maxPress = doc[chozenSeed]["stages"][i + 1]["maxPress"].as<int>();
+      minPress = doc[chozenSeed]["stages"][i + 1]["minPress"].as<int>();
+      maxTemp = doc[chozenSeed]["stages"][i + 1]["maxTemp"].as<int>();
+      minTemp = doc[chozenSeed]["stages"][i + 1]["minTemp"].as<int>();
     }
   }
   // запуск процесса с текущего давления
-  if (startBtn.hold() && !wasStartedFlag) {
-    switch (currentScreen) { // не сработает для аварийного экрана и экрана окончания
-    case 5:
-    case 6:
-      break;
+  // if (startBtn.hold() && !wasStartedFlag) {
+  //   switch (currentScreen) { // сработает не для всех экранов
+  //   case 5:
+  //   case 6:
+  //   case 7:
+  //   case 8:
+  //     break;
 
-    default:
-      continueFlag = 1;
-      break;
-    }
-
-  }
+  //   default:
+  //     continueFlag = 1;
+  //     break;
+  //   }
+  // }
   /* Проходимся по массиву культуры, прверяем давление. Если выше нижнего значения диапазона,
   то устанавливаем инкремент к общему времени на значение, соответствующее предыдущему
   диапазону. Начинаем с 3-го диапазона, раньше не имеет смысла. Таким образом, если
   поднят флаг continueFlag, запустится процесс не с начала, а со времени, соответствующему
   диапазону давлений.
   */
-  for (int i = 0; i < arrayLen - 1; i = i + 3) {
-    if (doc[chozenSeed]["value"][i + 7].as<int>() > pressure && continueFlag == 1) {
-      continueTime = doc[chozenSeed]["value"][i + 2].as<int>() * 60;
-      continueFlag = 0;
-      startProcess();
-      stopLed.stop();
-      currentScreen = 4;
-    }
-  }
+  // for (int i = 0; i < arrayLen - 1; i = i + 3) {
+  //   if (doc[chozenSeed]["value"][i + 7].as<int>() > pressure && continueFlag == 1) {
+  //     continueTime = doc[chozenSeed]["value"][i + 2].as<int>() * 60;
+  //     continueFlag = 0;
+  //     startProcess();
+  //     stopLed.stop();
+  //     currentScreen = 4;
+  //   }
+  // }
 
   // отрубаем пресс по времени окончания
   if (totalTime >= endTime && wasStartedFlag) {
@@ -588,6 +593,7 @@ void loop() {
   //   StartedStockUp = false;
   // }
 
+// Если нажать Стоп дважды, потом зажать на третий раз, сбросятся настройки WIFi по умолчанию 
   if (stopBtn.step(2)) {
     resetWiFi();
     ESP.restart();
@@ -622,35 +628,36 @@ void loop() {
   // Вывод в Serial
   if (timerSerialDelay.isReady() && DEBUG == 1) {
 
-    // Serial.println("========");
-    // Serial.print("End Time: ");
-    // Serial.println(endTime);
+    Serial.println("========");
+    Serial.print("End Time: ");
+    Serial.println(endTime);
     // Serial.println(pointer);
-    // Serial.print("Культура: ");
-    // Serial.println(doc[chozenSeed]["name"].as<const char *>());
+    Serial.print("Программа: ");
+    Serial.println(doc[chozenSeed]["name"].as<const char *>());
     // Serial.print("CultOnScreen: ");
     // Serial.println(cultOnScreen);
     // Serial.print("Screen numbre: ");
     // Serial.println(currentScreen);
 
-    // Serial.print("Max-min press: ");
-    // Serial.print(maxPress);
-    // Serial.print("-");
-    // Serial.println(minPress);
+    Serial.print("Max-min press: ");
+    Serial.print(maxPress);
+    Serial.print("-");
+    Serial.println(minPress);
+    Serial.print("Max-min temp: ");
+    Serial.print(maxTemp);
+    Serial.print("-");
+    Serial.println(minTemp);
     // Serial.print("ADC out: ");
 
-        Serial.print("ADC Out");
-     Serial.println(ADS.getValue());
+    //     Serial.print("ADC Out");
+    //  Serial.println(ADS.getValue());
 
-             Serial.print("Safety time");
-     Serial.println(safetyTime);
-                 Serial.print("Total time");
-     Serial.println(totalTime);
-             Serial.print("pressure");
-     Serial.println(pressure);
-
-                  Serial.print("Стоптаймер готов?");
-     Serial.println(pumpOnTmr.isReady());
+    //          Serial.print("Safety time");
+    //  Serial.println(safetyTime);
+    //              Serial.print("Total time");
+    //  Serial.println(totalTime);
+    //          Serial.print("pressure");
+    //  Serial.println(pressure);
 
 
   }

@@ -6,7 +6,7 @@ static uint8_t pointer = 0; // Переменная указатель
 // вывод диапазонов
 void printDiapazons() {
     for (int i = firstDiap*3; i < firstDiap*3+24; i=i+3) {
-    if ((doc[chozenSeed]["value"][i].as < int > ()) !=0) {
+    if ((doc[chozenSeed]["value"][i].as <int> ()) !=0) {
       tft.print(doc[chozenSeed]["value"][i].as < int > ());
       tft.print(F("-"));
       tft.print(doc[chozenSeed]["value"][i + 1].as < int > ());

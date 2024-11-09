@@ -72,17 +72,17 @@ void handleStartForm(AsyncWebServerRequest *request)
     int rowIndex = request->getParam("row")->value().toInt();
 
     chozenSeed = tableIndex;
-    arrayLen = doc[chozenSeed]["value"].size();
-    endTime = doc[chozenSeed]["value"][arrayLen - 1].as < int > () * 60;
+    arrayLen = doc[chozenSeed]["stages"].size();
+    endTime = doc[chozenSeed]["stages"][arrayLen - 1].as < int > () * 60;
     totalHour = endTime / 3600;
     totalMins = (endTime - totalHour * 3600) / 60;
 
     // Serial.println(doc[chozenSeed]["name"].as <String>());
     // Serial.println(chozenSeed);
 
-    if (doc[chozenSeed]["value"].is<JsonArray>())
+    if (doc[chozenSeed]["stages"].is<JsonArray>())
     {
-      JsonArray valueArray = doc[chozenSeed]["value"];
+      JsonArray valueArray = doc[chozenSeed]["stages"];
       if (valueArray.size() > rowIndex - 3)
       {
         continueTime = valueArray[rowIndex - 3].as<int>() * 60;
