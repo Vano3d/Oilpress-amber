@@ -302,6 +302,9 @@ void loop() {
   arrayLen = doc[chozenSeed]["stages"].size();
 
   // находим последний элемент в массиве, он же время окончания (в секундах)
+  // for (int i=0; i=arrayLen-1; i++) {
+  //   endTime += doc[chozenSeed]["stages"][i]["time"].as<int>() * 60;
+  // }
   endTime = doc[chozenSeed]["stages"][arrayLen - 1]["time"].as<int>() * 60;
 
   // находим оставшееся время процесса отжатия
@@ -647,6 +650,8 @@ void loop() {
     Serial.print(maxTemp);
     Serial.print("-");
     Serial.println(minTemp);
+    Serial.print("Array lenght");
+    Serial.println(arrayLen);
     // Serial.print("ADC out: ");
 
     //     Serial.print("ADC Out");

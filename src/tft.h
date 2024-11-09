@@ -2,17 +2,26 @@
 
 static uint8_t pointer = 0; // Переменная указатель
 
+void some(String name, String eee) {
+  doc[chozenSeed]["stages"][eee][name].as<int>();
+}
 
 // вывод диапазонов
 void printDiapazons() {
-    for (int i = firstDiap*3; i < firstDiap*3+24; i += 1) {
+    for (int i = firstDiap; i < firstDiap+3; i += 1) {
     if (1==1) {
       // if ((doc[chozenSeed]["value"][i].as <int> ()) !=NULL) {
-      tft.print(doc[chozenSeed]["stages"][i]["maxPress"].as < int > ());
+      tft.print(doc[chozenSeed]["stages"][i]["maxPress"].as<int>());
       tft.print(F("-"));
-      tft.print(doc[chozenSeed]["stages"][i]["minPress"].as < int > ());
-      tft.print(F(" бар "));
-      tft.print(doc[chozenSeed]["stages"][i + 2].as < int > ());
+      tft.print(doc[chozenSeed]["stages"][i]["minPress"].as<int>());
+      tft.println(F(" бар "));
+      tft.print(F(" "));
+      tft.print(doc[chozenSeed]["stages"][i]["maxTemp"].as<int>());
+      tft.print(F("-"));
+      tft.print(doc[chozenSeed]["stages"][i]["minTemp"].as<int>());
+      tft.println(F(" градусов"));
+      tft.print(F(" "));
+      tft.print(doc[chozenSeed]["stages"][i]["time"].as<int>());
       tft.println(F(" мин"));
     }
   }
