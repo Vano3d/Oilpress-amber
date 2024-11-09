@@ -5,13 +5,14 @@ static uint8_t pointer = 0; // Переменная указатель
 
 // вывод диапазонов
 void printDiapazons() {
-    for (int i = firstDiap*3; i < firstDiap*3+24; i=i+3) {
-    if ((doc[chozenSeed]["value"][i].as <int> ()) !=0) {
-      tft.print(doc[chozenSeed]["value"][i].as < int > ());
+    for (int i = firstDiap*3; i < firstDiap*3+24; i += 1) {
+    if (1==1) {
+      // if ((doc[chozenSeed]["value"][i].as <int> ()) !=NULL) {
+      tft.print(doc[chozenSeed]["stages"][i]["maxPress"].as < int > ());
       tft.print(F("-"));
-      tft.print(doc[chozenSeed]["value"][i + 1].as < int > ());
+      tft.print(doc[chozenSeed]["stages"][i]["minPress"].as < int > ());
       tft.print(F(" бар "));
-      tft.print(doc[chozenSeed]["value"][i + 2].as < int > ());
+      tft.print(doc[chozenSeed]["stages"][i + 2].as < int > ());
       tft.println(F(" мин"));
     }
   }
@@ -101,7 +102,7 @@ void nameAndTime() {
   tft.loadFont(myFont28);
   tft.setCursor(5, 5);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.println(doc[chozenSeed]["name"].as < String > ());
+  tft.println(doc[chozenSeed]["name"].as<String>());
   tft.unloadFont();
 
   tft.loadFont(myFont24);
@@ -159,7 +160,7 @@ void tftMainScreen() {
   tft.loadFont(myFont28);
   tft.setCursor(0, 3);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.println("Что давим?");
+  tft.println("Программы");
   tft.unloadFont();
   tft.loadFont(myFont28);
 
@@ -234,12 +235,12 @@ void endScreen()
 
   tft.loadFont(myFont28);
   tft.setTextColor(TFT_GREEN, TFT_BLACK);
-  textWidth = tft.textWidth("ОТЖИМ");
+  textWidth = tft.textWidth("ПРОГРАММА");
   tft.setCursor((tft.width() - textWidth)/2, 80);
-  tft.println("ОТЖИМ");
-  textWidth = tft.textWidth("ЗАКОНЧЕН");
+  tft.println("ПРОГРАММА");
+  textWidth = tft.textWidth("ЗАКОНЧЕНА");
   tft.setCursor((tft.width() - textWidth)/2, 115);
-  tft.println("ЗАКОНЧЕН");
+  tft.println("ЗАКОНЧЕНА");
 
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.setCursor(10, 170);
