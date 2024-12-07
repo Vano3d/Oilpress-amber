@@ -202,6 +202,7 @@ void setup() {
       isConnectedToRouter = true;
       break;
     }
+    
     delay(1000);
     Serial.print(".");
   }

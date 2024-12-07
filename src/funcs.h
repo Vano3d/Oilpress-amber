@@ -20,6 +20,14 @@ void pump_off() {
   barrelOff();
 }
 
+void heat_on() {
+  digitalWrite(HEAT, 1);
+}
+
+void heat_off() {
+  digitalWrite(HEAT, 0);
+}
+
 void buzzer() {
   if (buzzFlag) {
     tone(BUZZER, 1000, 650);

@@ -60,6 +60,7 @@ long totalTime = 0;
 long endTime;
 
 bool isFilled = 0; // флаг достижения порогового значения цикла
+bool isWarmed = 0;
 bool endFlag = 0; // флаг окончания всего процесса
 unsigned int pressure = 0; // давление
 bool wasStartedFlag = 0; // начинался ли процесс
