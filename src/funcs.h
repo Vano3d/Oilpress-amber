@@ -10,14 +10,14 @@ void pump_on() {
   digitalWrite(PUMP, 1);
   // при каждом включении помпы запускаем таймер
   pumpOnTmr.setTimeout(safetyTime*1000);
-  barrelOn();
+  // barrelOn();
 }
 
 void pump_off() {
   // если помпа благополучно выключается, таймер останавливается
   digitalWrite(PUMP, 0);
   pumpOnTmr.stop();
-  barrelOff();
+  // barrelOff();
 }
 
 void heat_on() {

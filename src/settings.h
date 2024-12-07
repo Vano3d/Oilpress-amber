@@ -74,6 +74,7 @@ int arrayLen;
 unsigned int timeLeft, timeLeftHour, timeLeftMins, timeLeftSec;
 unsigned int totalHour, totalMins, pastHours, pastMins, pastSec;
 
+int temp = 0; // заглушка для показаний температуры
 
 byte cultOnScreen;
 

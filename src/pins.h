@@ -9,4 +9,5 @@
 #define CLK 19
 #define DIO 23
 #define BUZZER 13
+#define HEAT 2
 

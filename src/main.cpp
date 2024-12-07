@@ -174,18 +174,10 @@ void setup() {
 
    wifiConnectScreen();
 
-  // disp.printRight(true);  
-  // disp.setCursorEnd();  
-  // disp.brightness(3);
   display.setBrightness(BRIGHT_7);
   
 
   ElegantOTA.begin(&server); 
-  // // ElegantOTA callbacks
-  // ElegantOTA.onStart(onOTAStart);
-  // ElegantOTA.onProgress(onOTAProgress);
-  // ElegantOTA.onEnd(onOTAEnd);
-
 
   String ssidWeb = sok[0]["ssid"].as<String>();
   String passWeb = sok[0]["password"].as<String>();
@@ -306,7 +298,11 @@ void loop() {
   // for (int i=0; i=arrayLen-1; i++) {
   //   endTime += doc[chozenSeed]["stages"][i]["time"].as<int>() * 60;
   // }
-  endTime = doc[chozenSeed]["stages"][arrayLen - 1]["time"].as<int>() * 60;
+  // endTime = doc[chozenSeed]["stages"][arrayLen - 1]["time"].as<int>() * 60;
+
+  for (int i = 0; i < arrayLen-1; i++) {
+     endTime += doc[chozenSeed]["stages"][i+1]["time"].as<int>() * 60;
+  }
 
   // находим оставшееся время процесса отжатия
   timeLeft = (endTime - totalTime);
@@ -507,11 +503,20 @@ void loop() {
     pump_off();
     isFilled = 0;
   } else if (pressure <= minPress && isFilled == 0 && wasStartedFlag) {
-    pump_on();
+    if(minPress!=0) pump_on();
     isFilled = 1;
   }
 
-  // проходимся по массиву культуры и меняем диапазон давлений по времени
+  if (temp >= maxTemp && isFilled) {
+    heat_off();
+    isWarmed = 0;
+  } else if (temp <= minTemp && isWarmed == 0 && wasStartedFlag) {
+    heat_on();
+    isWarmed = 1;
+  }
+
+
+  // проходимся по массиву и меняем диапазон давлений по времени
 
   for (int i = 0; i < arrayLen; i += 1) {
     if (totalTime < doc[chozenSeed]["stages"][0]["time"].as<int>() * 60) {
@@ -626,6 +631,11 @@ void loop() {
       tft.print(" - ");
       tft.print(minPress);
 
+      tft.setCursor(40, 265);
+      tft.print(maxTemp);
+      tft.print(" - ");
+      tft.print(minTemp);
+
     }
   }
 
@@ -638,10 +648,6 @@ void loop() {
     // Serial.println(pointer);
     Serial.print("Программа: ");
     Serial.println(doc[chozenSeed]["name"].as<const char *>());
-    // Serial.print("CultOnScreen: ");
-    // Serial.println(cultOnScreen);
-    // Serial.print("Screen numbre: ");
-    // Serial.println(currentScreen);
 
     Serial.print("Max-min press: ");
     Serial.print(maxPress);
@@ -653,6 +659,8 @@ void loop() {
     Serial.println(minTemp);
     Serial.print("Array lenght");
     Serial.println(arrayLen);
+    Serial.print("Total time: ");
+    Serial.println(endTime);
     // Serial.print("ADC out: ");
 
     //     Serial.print("ADC Out");

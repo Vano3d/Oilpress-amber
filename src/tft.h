@@ -117,7 +117,7 @@ void nameAndTime() {
   tft.loadFont(myFont24);
   tft.setCursor(5, 38);
   tft.setTextColor(TFT_ORANGE, TFT_BLACK);
-  tft.print("отжим за ");
+  tft.print("всего ");
 
   if (totalHour != 0) {
     tft.print(totalHour);
@@ -197,7 +197,7 @@ void processScreen() {
   nameAndTime();
   tft.setCursor(5, 38);
   tft.setTextColor(TFT_ORANGE, TFT_BLACK);
-  tft.print("отжим за ");
+  tft.print("время ");
 
   if (totalHour != 0) {
     tft.print(totalHour);
@@ -214,6 +214,10 @@ void processScreen() {
   textWidth = tft.textWidth("Диапазон, бар");
   tft.setCursor((tft.width() - textWidth) / 2, 155);
   tft.println("Диапазон, бар");
+
+  textWidth = tft.textWidth("Диапазон, град");
+  tft.setCursor((tft.width() - textWidth) / 2, 230);
+  tft.println("Диапазон, град");
 
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.setCursor(58, 115);
