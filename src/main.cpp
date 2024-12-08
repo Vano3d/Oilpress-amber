@@ -277,6 +277,7 @@ void setup() {
 void loop() {
 
   mySeed.updateSeed(chozenSeed);// обновляем класс MySeed регулярно
+  currentStage = mySeed.getCurrentStage(myTime.current);
 
   if (ADS.isBusy() == false)
   {
@@ -509,20 +510,30 @@ void loop() {
   }
 
   // проходимся по массиву и меняем диапазон давлений по времени
-
-  for (int i = 0; i < arrayLen; i += 1) {
-    if (myTime.current < mySeed.time(0) * 60) {
-      sensor.maxPress = mySeed.maxPress(0);
-      sensor.minPress = mySeed.minPress(0);
-      sensor.maxTemp = mySeed.maxTemp(0);
-      sensor.minTemp = mySeed.minTemp(0);
-    } else if (myTime.current >= mySeed.time(i) * 60) {
-      sensor.maxPress = mySeed.maxPress(i+1);
-      sensor.minPress = mySeed.minPress(i+1);
-      sensor.maxTemp = mySeed.maxTemp(i+1);
-      sensor.minTemp = mySeed.minTemp(i+1);
+    if (currentStage >= 0 && currentStage < mySeed.length()) {
+        sensor.maxPress = mySeed.maxPress(currentStage);
+        sensor.minPress = mySeed.minPress(currentStage);
+        sensor.maxTemp = mySeed.maxTemp(currentStage);
+        sensor.minTemp = mySeed.minTemp(currentStage);
+    } else {
+        // Обработка окончания всех этапов
+        endFlag = true;
+        stopProcess();
+        // Дополнительные действия при окончании процесса
     }
-  }
+  // for (int i = 0; i < arrayLen; i += 1) {
+  //   if (myTime.current < mySeed.time(0) * 60) {
+  //     sensor.maxPress = mySeed.maxPress(0);
+  //     sensor.minPress = mySeed.minPress(0);
+  //     sensor.maxTemp = mySeed.maxTemp(0);
+  //     sensor.minTemp = mySeed.minTemp(0);
+  //   } else if (myTime.current >= mySeed.time(i) * 60) {
+  //     sensor.maxPress = mySeed.maxPress(i+1);
+  //     sensor.minPress = mySeed.minPress(i+1);
+  //     sensor.maxTemp = mySeed.maxTemp(i+1);
+  //     sensor.minTemp = mySeed.minTemp(i+1);
+  //   }
+  // }
   // запуск процесса с текущего давления
   // if (startBtn.hold() && !wasStartedFlag) {
   //   switch (currentScreen) { // сработает не для всех экранов
