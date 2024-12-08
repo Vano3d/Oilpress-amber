@@ -49,7 +49,7 @@ void buzzer() {
 void startProcess() {
   // currentTime = 0;
   endFlag = 0;
-  timeBeforeStart = millis() / 1000ul;
+  myTime.beforeStart = millis() / 1000ul;
   wasStartedFlag = 1;
   sensor.isFilled = 0;
   stopLed.stop();
@@ -67,7 +67,7 @@ void stopProcess() {
   endTimer.setTimeout(100);
   endFlag = 1;
   wasStartedFlag = 0;
-  currentTime = 0;
+  myTime.current = 0;
   continueTime = 0;
   Serial.println("Отжим остановлен");
   currentScreen = 6;

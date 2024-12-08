@@ -6,6 +6,23 @@ public:
     void updateSeed(byte seed) {
         chozenSeed = seed;
     }
+
+    int maxPress(byte number) {
+        return doc[chozenSeed]["stages"][number]["maxPress"].as<int>();
+    }
+    int minPress(byte number) { 
+        return doc[chozenSeed]["stages"][number]["minPress"].as<int>(); 
+    }
+    int maxTemp(byte number) {
+        return doc[chozenSeed]["stages"][number]["maxTemp"].as<int>();
+    }
+    int minTemp(byte number) {
+        return doc[chozenSeed]["stages"][number]["minTemp"].as<int>();
+    }
+    int time(byte number) {
+        return doc[chozenSeed]["stages"][number]["time"].as<int>();
+    }
+
     size_t length() const {
         return doc[chozenSeed]["stages"].size();
     }

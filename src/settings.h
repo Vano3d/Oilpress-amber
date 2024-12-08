@@ -58,8 +58,6 @@ ADS1115 ADS(0x48);
 
 TFT_eSPI tft = TFT_eSPI();
 
-long currentTime = 0;
-long endTime = 0;
 
 bool endFlag = 0; // флаг окончания всего процесса
 // unsigned int pressure = 0; // давление
@@ -71,7 +69,7 @@ struct pastTime {
 
 struct allTheTime {
   long current, end, beforeStart;
-  unsigned int totalHour, totalMins, left, leftHour, leftMins, leftSec, continueTime;
+  unsigned long totalHour, totalMins, left, leftHour, leftMins, leftSec, continueTime;
   bool continueFlag;
   pastTime past;
 };
@@ -89,7 +87,6 @@ mySensors sensor;
 
 byte chozenSeed = 0; // номер выбранной культуры (от 0 до ХХ)
 bool flag = 0;
-long timeBeforeStart = 0;
 int arrayLen;
 
 int temp = 0; // заглушка для показаний температуры
@@ -145,5 +142,3 @@ String getSensorReadings(){
 }
 
 int tableIndex, rowIndex;
-
-int timeTime;

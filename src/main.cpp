@@ -301,17 +301,11 @@ void loop() {
   // находим длину массива выбранной культуры
   arrayLen = mySeed.length();
 
-  // находим последний элемент в массиве, он же время окончания (в секундах)
-  // for (int i=0; i=arrayLen-1; i++) {
-  //   myTime.end += doc[chozenSeed]["stages"][i]["time"].as<int>() * 60;
-  // }
-  // myTime.end = doc[chozenSeed]["stages"][arrayLen - 1]["time"].as<int>() * 60;
-
+// находим всё время процесса - сумма всех времён в массиве
  myTime.end = mySeed.calcEndTime();
 
-
-  // находим оставшееся время процесса отжатия
-  myTime.left = (myTime.end - currentTime); 
+  // находим оставшееся время процесса
+  myTime.left = (myTime.end - myTime.current); 
 
   // переменные для подсчёта оставшегося времени
   myTime.leftHour  = myTime.left  / 3600;
@@ -323,9 +317,9 @@ void loop() {
   myTime.totalMins = (myTime.end - myTime.totalHour * 3600) / 60;
 
   // переменные для подсчёта прошедшего времени
-  myTime.past.hours = currentTime / 3600;
-  myTime.past.mins = currentTime / 60 - currentTime / 3600 * 60;
-  myTime.past.sec = currentTime % 60;
+  myTime.past.hours = myTime.current / 3600;
+  myTime.past.mins = myTime.current / 60 - myTime.current / 3600 * 60;
+  myTime.past.sec = myTime.current % 60;
 
   // server.handleClient();
 
@@ -495,7 +489,7 @@ void loop() {
   /* если нажать на кнопку "старт", то поднимается флаг wasStartedFlag, время начинает бежать
   с нуля, запускается цикл назначения диапазона давлений
   */
-  if (wasStartedFlag) currentTime = millis() / 1000ul - timeBeforeStart + continueTime;
+  if (wasStartedFlag) myTime.current = millis() / 1000ul - myTime.beforeStart + continueTime;
 
   // главный алгоритм, поддерживающий давление в диапазоне minPress-maxPress
   if (sensor.pressure >= sensor.maxPress && sensor.isFilled) {
@@ -517,16 +511,16 @@ void loop() {
   // проходимся по массиву и меняем диапазон давлений по времени
 
   for (int i = 0; i < arrayLen; i += 1) {
-    if (currentTime < doc[chozenSeed]["stages"][0]["time"].as<int>() * 60) {
-      sensor.maxPress = doc[chozenSeed]["stages"][0]["maxPress"].as<int>();
-      sensor.minPress = doc[chozenSeed]["stages"][0]["minPress"].as<int>();
-      sensor.maxTemp = doc[chozenSeed]["stages"][0]["maxTemp"].as<int>();
-      sensor.minTemp = doc[chozenSeed]["stages"][0]["minTemp"].as<int>();
-    } else if (currentTime >= doc[chozenSeed]["stages"][i]["time"].as<int>() * 60) {
-      sensor.maxPress = doc[chozenSeed]["stages"][i + 1]["maxPress"].as<int>();
-      sensor.minPress = doc[chozenSeed]["stages"][i + 1]["minPress"].as<int>();
-      sensor.maxTemp = doc[chozenSeed]["stages"][i + 1]["maxTemp"].as<int>();
-      sensor.minTemp = doc[chozenSeed]["stages"][i + 1]["minTemp"].as<int>();
+    if (myTime.current < mySeed.time(0) * 60) {
+      sensor.maxPress = mySeed.maxPress(0);
+      sensor.minPress = mySeed.minPress(0);
+      sensor.maxTemp = mySeed.maxTemp(0);
+      sensor.minTemp = mySeed.minTemp(0);
+    } else if (myTime.current >= mySeed.time(i) * 60) {
+      sensor.maxPress = mySeed.maxPress(i+1);
+      sensor.minPress = mySeed.minPress(i+1);
+      sensor.maxTemp = mySeed.maxTemp(i+1);
+      sensor.minTemp = mySeed.minTemp(i+1);
     }
   }
   // запуск процесса с текущего давления
@@ -560,7 +554,7 @@ void loop() {
   // }
 
   // отрубаем пресс по времени окончания
-  if (currentTime >= myTime.end && wasStartedFlag) {
+  if (myTime.current >= myTime.end && wasStartedFlag) {
     stopProcess();
     stopLed.blink(100, 200, 600);
     endScreen();
