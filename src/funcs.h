@@ -47,11 +47,11 @@ void buzzer() {
 
 
 void startProcess() {
-  // totalTime = 0;
+  // currentTime = 0;
   endFlag = 0;
   timeBeforeStart = millis() / 1000ul;
   wasStartedFlag = 1;
-  isFilled = 0;
+  sensor.isFilled = 0;
   stopLed.stop();
   currentScreen = 4;
   if (beeperFlag) tone(BUZZER, 1500, 150);
@@ -67,7 +67,7 @@ void stopProcess() {
   endTimer.setTimeout(100);
   endFlag = 1;
   wasStartedFlag = 0;
-  totalTime = 0;
+  currentTime = 0;
   continueTime = 0;
   Serial.println("Отжим остановлен");
   currentScreen = 6;
@@ -132,31 +132,11 @@ void resetWiFi() {
     }
   }
 
-
-
-
-// unsigned long ota_progress_millis = 0;
-
-// void onOTAStart() {
-//   // Log when OTA has started
-//   Serial.println("OTA update started!");
-//   stopProcess();
-// }
-
-// void onOTAProgress(size_t current, size_t final) {
-//   // Log every 1 second
-//   if (millis() - ota_progress_millis > 1000) {
-//     ota_progress_millis = millis();
-//     Serial.printf("OTA Progress Current: %u bytes, Final: %u bytes\n", current, final);
-//   }
-// }
-
-// void onOTAEnd(bool success) {
-//   // Log when OTA has finished
-//   if (success) {
-//     Serial.println("OTA update finished successfully!");
-//   } else {
-//     Serial.println("There was an error during OTA update!");
-//   }
-//   // <Add your own code here>
-// }
+long calcEndTime(int seed) {
+    long sum = 0;
+    int stagesCount = doc[seed]["stages"].size();
+    for (int i = 0; i < stagesCount; i++) {
+        sum += doc[seed]["stages"][i]["time"].as<int>();
+    }
+    return sum * 60;
+}

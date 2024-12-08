@@ -36,9 +36,11 @@ JsonDocument pork;
 String jsonString;
 String jsonParams;
 
+#include "myseed.h"
 #include "settings.h"
 #include "tft.h"
 #include "funcs.h"
+
 
 #include "html.h"
 #include "handlers.h"
@@ -266,10 +268,15 @@ void setup() {
   // server.on("/web-start", HTTP_GET, [](AsyncWebServerRequest *request)
   //           { handleWebStart(request); });
 
+  safetyTime = sok[0]["protection"].as <int> ();
+  beeperFlag = sok[0]["beeper"].as <bool> ();
+  sensorPressure = sok[0]["sensor"].as <int> ();
 
 }
 
 void loop() {
+
+  mySeed.updateSeed(chozenSeed);// обновляем класс MySeed регулярно
 
   if (ADS.isBusy() == false)
   {
@@ -278,7 +285,7 @@ void loop() {
     ADS.requestADC(0);
     // Serial.print("\tAnalog0: ");
     // Serial.println(val_0);
-    pressure = constrain(ADS.getValue()/pressureDivivder,0,1000);
+    sensor.pressure = constrain(ADS.getValue()/pressureDivivder,0,1000);
 
   }
 
@@ -292,40 +299,36 @@ void loop() {
   ElegantOTA.loop();
 
   // находим длину массива выбранной культуры
-  arrayLen = doc[chozenSeed]["stages"].size();
+  arrayLen = mySeed.length();
 
   // находим последний элемент в массиве, он же время окончания (в секундах)
   // for (int i=0; i=arrayLen-1; i++) {
-  //   endTime += doc[chozenSeed]["stages"][i]["time"].as<int>() * 60;
+  //   myTime.end += doc[chozenSeed]["stages"][i]["time"].as<int>() * 60;
   // }
-  // endTime = doc[chozenSeed]["stages"][arrayLen - 1]["time"].as<int>() * 60;
+  // myTime.end = doc[chozenSeed]["stages"][arrayLen - 1]["time"].as<int>() * 60;
 
-  for (int i = 0; i < arrayLen-1; i++) {
-     endTime += doc[chozenSeed]["stages"][i+1]["time"].as<int>() * 60;
-  }
+ myTime.end = mySeed.calcEndTime();
+
 
   // находим оставшееся время процесса отжатия
-  timeLeft = (endTime - totalTime);
+  myTime.left = (myTime.end - currentTime); 
 
   // переменные для подсчёта оставшегося времени
-  timeLeftHour = timeLeft / 3600;
-  timeLeftMins = (timeLeft - timeLeftHour * 3600) / 60;
-  timeLeftSec = timeLeft % 60;
+  myTime.leftHour  = myTime.left  / 3600;
+  myTime.leftMins = (myTime.left - myTime.leftHour * 3600) / 60;
+  myTime.leftSec = myTime.left % 60;
 
   // длительность программы в часах и минутах
-  totalHour = endTime / 3600;
-  totalMins = (endTime - totalHour * 3600) / 60;
+  myTime.totalHour = myTime.end / 3600;
+  myTime.totalMins = (myTime.end - myTime.totalHour * 3600) / 60;
 
   // переменные для подсчёта прошедшего времени
-  pastHours = totalTime / 3600;
-  pastMins = totalTime / 60 - totalTime / 3600 * 60;
-  pastSec = totalTime % 60;
+  myTime.past.hours = currentTime / 3600;
+  myTime.past.mins = currentTime / 60 - currentTime / 3600 * 60;
+  myTime.past.sec = currentTime % 60;
 
   // server.handleClient();
 
-  safetyTime = sok[0]["protection"].as <int> ();
-  beeperFlag = sok[0]["beeper"].as <bool> ();
-  sensorPressure = sok[0]["sensor"].as <int> ();
 
 
 
@@ -334,7 +337,7 @@ void loop() {
     // disp.clear();
     // disp.print(pressure);
     // disp.update();
-    display.showNumber(pressure);
+    display.showNumber(sensor.pressure);
 
 
   }
@@ -373,13 +376,12 @@ void loop() {
   if (eb.left() && !wasStartedFlag) {
     switch (currentScreen) {
     case 1: // если на экране с культурами
-      pointer = constrain(pointer - 1, 0, doc.size() - 1);
-      if (doc.size() > PROGS_ON_SCREEN && (pointer+1)%PROGS_ON_SCREEN == 0) {
+      chozenSeed = constrain(chozenSeed - 1, 0, doc.size() - 1);
+      if (doc.size() > PROGS_ON_SCREEN && (chozenSeed+1)%PROGS_ON_SCREEN == 0) {
         cultureScreenNuber = constrain(cultureScreenNuber - 1, 1, cultureScreens);
         firstCulture = constrain(firstCulture - PROGS_ON_SCREEN, 0, (cultureScreens-1)*PROGS_ON_SCREEN);
         mainScreenUpdate();
       }
-      chozenSeed = pointer;
       cursorBack();
       break;
 
@@ -402,13 +404,12 @@ void loop() {
   if (eb.right()) {
     switch (currentScreen) {
     case 1: // если на экране с культурами
-      pointer = constrain(pointer + 1, 0, doc.size() - 1);
-      if (doc.size() > PROGS_ON_SCREEN && pointer%PROGS_ON_SCREEN == 0) {
+      chozenSeed = constrain(chozenSeed + 1, 0, doc.size() - 1);
+      if (doc.size() > PROGS_ON_SCREEN && chozenSeed%PROGS_ON_SCREEN == 0) {
         cultureScreenNuber = constrain(cultureScreenNuber + 1, 1, cultureScreens);
         firstCulture = constrain(firstCulture + PROGS_ON_SCREEN, 0, (cultureScreens-1)*PROGS_ON_SCREEN);
         mainScreenUpdate();
       }
-      chozenSeed = pointer;
       cursorForward();
       break;
     case 2: // если на экране с диапазонами
@@ -434,7 +435,6 @@ void loop() {
     case 1: // если на главном экране, переходим на диапазоны
       currentScreen = 2;
       diapazonScreen();
-      chozenSeed = pointer;
       break;
     case 2: // если на диапазонах, переходим на чарт
       currentScreen = 3;
@@ -466,7 +466,6 @@ void loop() {
       // запускает процесс на других экранах
     default:
       stopLed.stop();
-      chozenSeed = pointer;
       currentScreen = 4;
       startProcess();
       break;
@@ -496,39 +495,38 @@ void loop() {
   /* если нажать на кнопку "старт", то поднимается флаг wasStartedFlag, время начинает бежать
   с нуля, запускается цикл назначения диапазона давлений
   */
-  if (wasStartedFlag) totalTime = millis() / 1000ul - timeBeforeStart + continueTime;
+  if (wasStartedFlag) currentTime = millis() / 1000ul - timeBeforeStart + continueTime;
 
   // главный алгоритм, поддерживающий давление в диапазоне minPress-maxPress
-  if (pressure >= maxPress && isFilled) {
+  if (sensor.pressure >= sensor.maxPress && sensor.isFilled) {
     pump_off();
-    isFilled = 0;
-  } else if (pressure <= minPress && isFilled == 0 && wasStartedFlag) {
-    if(minPress!=0) pump_on();
-    isFilled = 1;
+    sensor.isFilled = 0;
+  } else if (sensor.pressure <= sensor.minPress && sensor.isFilled == 0 && wasStartedFlag) {
+    if(sensor.minPress!=0) pump_on();
+    sensor.isFilled = 1;
   }
 
-  if (temp >= maxTemp && isFilled) {
+  if (temp >= sensor.maxTemp && sensor.isWarmed) {
     heat_off();
-    isWarmed = 0;
-  } else if (temp <= minTemp && isWarmed == 0 && wasStartedFlag) {
+    sensor.isWarmed = 0;
+  } else if (temp <= sensor.minTemp && sensor.isWarmed == 0 && wasStartedFlag) {
     heat_on();
-    isWarmed = 1;
+    sensor.isWarmed = 1;
   }
-
 
   // проходимся по массиву и меняем диапазон давлений по времени
 
   for (int i = 0; i < arrayLen; i += 1) {
-    if (totalTime < doc[chozenSeed]["stages"][0]["time"].as<int>() * 60) {
-      maxPress = doc[chozenSeed]["stages"][0]["maxPress"].as<int>();
-      minPress = doc[chozenSeed]["stages"][0]["minPress"].as<int>();
-      maxTemp = doc[chozenSeed]["stages"][0]["maxTemp"].as<int>();
-      minTemp = doc[chozenSeed]["stages"][0]["minTemp"].as<int>();
-    } else if (totalTime >= doc[chozenSeed]["stages"][i]["time"].as<int>() * 60) {
-      maxPress = doc[chozenSeed]["stages"][i + 1]["maxPress"].as<int>();
-      minPress = doc[chozenSeed]["stages"][i + 1]["minPress"].as<int>();
-      maxTemp = doc[chozenSeed]["stages"][i + 1]["maxTemp"].as<int>();
-      minTemp = doc[chozenSeed]["stages"][i + 1]["minTemp"].as<int>();
+    if (currentTime < doc[chozenSeed]["stages"][0]["time"].as<int>() * 60) {
+      sensor.maxPress = doc[chozenSeed]["stages"][0]["maxPress"].as<int>();
+      sensor.minPress = doc[chozenSeed]["stages"][0]["minPress"].as<int>();
+      sensor.maxTemp = doc[chozenSeed]["stages"][0]["maxTemp"].as<int>();
+      sensor.minTemp = doc[chozenSeed]["stages"][0]["minTemp"].as<int>();
+    } else if (currentTime >= doc[chozenSeed]["stages"][i]["time"].as<int>() * 60) {
+      sensor.maxPress = doc[chozenSeed]["stages"][i + 1]["maxPress"].as<int>();
+      sensor.minPress = doc[chozenSeed]["stages"][i + 1]["minPress"].as<int>();
+      sensor.maxTemp = doc[chozenSeed]["stages"][i + 1]["maxTemp"].as<int>();
+      sensor.minTemp = doc[chozenSeed]["stages"][i + 1]["minTemp"].as<int>();
     }
   }
   // запуск процесса с текущего давления
@@ -562,11 +560,11 @@ void loop() {
   // }
 
   // отрубаем пресс по времени окончания
-  if (totalTime >= endTime && wasStartedFlag) {
+  if (currentTime >= myTime.end && wasStartedFlag) {
     stopProcess();
     stopLed.blink(100, 200, 600);
     endScreen();
-    // totalTime = 0;
+    // currentTime = 0;
   }
 
   // пищит три раза после окончания отжима
@@ -613,28 +611,28 @@ void loop() {
     if (processUpdTmr.isReady()) {
       screenBeginFlag = true;
       tft.fillRect(20,110,32,30,TFT_BLACK);
-      tft.setCursor(timeLeftHour > 9 ? 21 : 38, 113);
-      tft.print(timeLeftHour);
+      tft.setCursor(myTime.leftHour > 9 ? 21 : 38, 113);
+      tft.print(myTime.leftHour);
 
       tft.fillRect(84, 110, 35, 35, TFT_BLACK);
-      tft.setCursor(timeLeftMins > 9 ? 84 : 99, 113);
-      tft.print(timeLeftMins);
+      tft.setCursor(myTime.leftMins > 9 ? 84 : 99, 113);
+      tft.print(myTime.leftMins);
 
       tft.fillRect(150, 110, 35, 35, TFT_BLACK);
-      tft.setCursor(timeLeftSec > 9 ? 150 : 165, 113);
-      tft.print(timeLeftSec);
+      tft.setCursor(myTime.leftSec > 9 ? 150 : 165, 113);
+      tft.print(myTime.leftSec);
 
       // tft.fillRect(20,182,180,35,TFT_BLACK);
       tft.setTextColor(TFT_ORANGE, TFT_BLACK);
       tft.setCursor(40, 185);
-      tft.print(maxPress);
+      tft.print(sensor.maxPress);
       tft.print(" - ");
-      tft.print(minPress);
+      tft.print(sensor.minPress);
 
       tft.setCursor(40, 265);
-      tft.print(maxTemp);
+      tft.print(sensor.maxTemp);
       tft.print(" - ");
-      tft.print(minTemp);
+      tft.print(sensor.minTemp);
 
     }
   }
@@ -643,24 +641,24 @@ void loop() {
   if (timerSerialDelay.isReady() && DEBUG == 1) {
 
     Serial.println("========");
-    Serial.print("End Time: ");
-    Serial.println(endTime);
-    // Serial.println(pointer);
+
+    // Serial.println(chozenSeed);
     Serial.print("Программа: ");
     Serial.println(doc[chozenSeed]["name"].as<const char *>());
 
-    Serial.print("Max-min press: ");
-    Serial.print(maxPress);
-    Serial.print("-");
-    Serial.println(minPress);
-    Serial.print("Max-min temp: ");
-    Serial.print(maxTemp);
-    Serial.print("-");
-    Serial.println(minTemp);
+    // Serial.print("Max-min press: ");
+    // Serial.print(sensor.maxPress);
+    // Serial.print("-");
+    // Serial.println(sensor.minPress);
+    // Serial.print("Max-min temp: ");
+    // Serial.print(maxTemp);
+    // Serial.print("-");
+    // Serial.println(minTemp);
     Serial.print("Array lenght");
     Serial.println(arrayLen);
-    Serial.print("Total time: ");
-    Serial.println(endTime);
+    Serial.print("End time: ");
+    Serial.println(myTime.end);
+
     // Serial.print("ADC out: ");
 
     //     Serial.print("ADC Out");
@@ -669,7 +667,7 @@ void loop() {
     //          Serial.print("Safety time");
     //  Serial.println(safetyTime);
     //              Serial.print("Total time");
-    //  Serial.println(totalTime);
+    //  Serial.println(currentTime);
     //          Serial.print("pressure");
     //  Serial.println(pressure);
 

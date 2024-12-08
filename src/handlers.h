@@ -72,10 +72,10 @@ void handleStartForm(AsyncWebServerRequest *request)
     int rowIndex = request->getParam("row")->value().toInt();
 
     chozenSeed = tableIndex;
-    arrayLen = doc[chozenSeed]["stages"].size();
-    endTime = doc[chozenSeed]["stages"][arrayLen - 1].as < int > () * 60;
-    totalHour = endTime / 3600;
-    totalMins = (endTime - totalHour * 3600) / 60;
+    arrayLen = mySeed.length();
+    myTime.end = mySeed.calcEndTime();
+    myTime.totalHour = myTime.end / 3600;
+    myTime.leftMins = (myTime.end - myTime.totalHour * 3600) / 60;
 
     // Serial.println(doc[chozenSeed]["name"].as <String>());
     // Serial.println(chozenSeed);

@@ -1,6 +1,5 @@
 #include <Arduino.h>
 
-static uint8_t pointer = 0; // Переменная указатель
 
 void some(String name, String eee) {
   doc[chozenSeed]["stages"][eee][name].as<int>();
@@ -86,7 +85,7 @@ void plotChart() {
   byte coordY;
   byte coordX2;
   byte coordY2;
-  float coeffX = 240.0 / (float(endTime / 60));
+  float coeffX = 240.0 / (float(myTime.end / 60));
   float coeffY = 120.0 / float(doc[chozenSeed]["value"][arrayLen - 3].as < int > ());
 
   for (int i = 0; i < arrayLen - 1; i = i + 3) {
@@ -111,20 +110,32 @@ void nameAndTime() {
   tft.loadFont(myFont28);
   tft.setCursor(5, 5);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.println(doc[chozenSeed]["name"].as<String>());
+  tft.println(mySeed.name());
   tft.unloadFont();
 
   tft.loadFont(myFont24);
   tft.setCursor(5, 38);
   tft.setTextColor(TFT_ORANGE, TFT_BLACK);
   tft.print("всего ");
+    
+    myTime.end = mySeed.calcEndTime();
+    myTime.totalHour = myTime.end / 3600;
+    myTime.leftMins = (myTime.end - myTime.totalHour * 3600) / 60;  
+    
+    Serial.print("Total hour: ");
+    Serial.println(myTime.totalHour);
+    Serial.print("Total mins: ");
+    Serial.println(myTime.leftMins);
 
-  if (totalHour != 0) {
-    tft.print(totalHour);
+    
+  if (myTime.totalHour != 0) {
+
+    tft.print(myTime.totalHour);
     tft.print(F(" ч "));
   }
-  if (totalMins != 0) {
-    tft.print(totalMins);
+  if (myTime.leftMins != 0) {
+
+    tft.print(myTime.leftMins);
     tft.print(F(" м"));
   }
 }
@@ -132,7 +143,7 @@ void nameAndTime() {
 
 void mainScreenUpdate() {
     tft.fillRect(1, 35, 239, 300, TFT_BLACK);
-    tft.drawString(">", 2, pointer%PROGS_ON_SCREEN * 30 + 39);
+    tft.drawString(">", 2, chozenSeed%PROGS_ON_SCREEN * 30 + 39);
   
   // находим кол-во экранов с культурами
   if (doc.size()%PROGS_ON_SCREEN == 0) {
@@ -195,18 +206,6 @@ void chartScreen() {
 // Экран с процессом
 void processScreen() {
   nameAndTime();
-  tft.setCursor(5, 38);
-  tft.setTextColor(TFT_ORANGE, TFT_BLACK);
-  tft.print("время ");
-
-  if (totalHour != 0) {
-    tft.print(totalHour);
-    tft.print(F(" ч "));
-  }
-  if (totalMins != 0) {
-    tft.print(totalMins);
-    tft.print(F(" м"));
-  }
 
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.setCursor(65, 82);
@@ -259,15 +258,15 @@ void endScreen()
   tft.setCursor(10, 170);
   tft.print("за  ");
   tft.setTextColor(TFT_ORANGE, TFT_BLACK);
-  tft.print(pastHours);
+  tft.print(myTime.past.hours);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.print(" ч  ");
   tft.setTextColor(TFT_ORANGE, TFT_BLACK);
-  tft.print(pastMins);
+  tft.print(myTime.past.mins);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.print(" м  ");
   tft.setTextColor(TFT_ORANGE, TFT_BLACK);
-  tft.print(pastSec);
+  tft.print(myTime.past.sec);
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.print(" с");
   tft.unloadFont();
@@ -301,14 +300,14 @@ void alarmScreen()
 
 void cursorForward() {
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.drawString(">", 2, pointer%PROGS_ON_SCREEN * 30 + 39);
-  if (pointer%PROGS_ON_SCREEN != 0) tft.fillRect(2, pointer%PROGS_ON_SCREEN * 30 + 12, 15, 17, TFT_BLACK);
+  tft.drawString(">", 2, chozenSeed%PROGS_ON_SCREEN * 30 + 39);
+  if (chozenSeed%PROGS_ON_SCREEN != 0) tft.fillRect(2, chozenSeed%PROGS_ON_SCREEN * 30 + 12, 15, 17, TFT_BLACK);
 }
 
 void cursorBack() {
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.drawString(">", 2, pointer%PROGS_ON_SCREEN * 30 + 39);
-  tft.fillRect(2, (pointer%PROGS_ON_SCREEN + 1) * 30 + 42, 15, 17, TFT_BLACK);
+  tft.drawString(">", 2, chozenSeed%PROGS_ON_SCREEN * 30 + 39);
+  tft.fillRect(2, (chozenSeed%PROGS_ON_SCREEN + 1) * 30 + 42, 15, 17, TFT_BLACK);
 }
 
 void wifiConnectScreen() {

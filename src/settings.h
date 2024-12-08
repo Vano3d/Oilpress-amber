@@ -21,6 +21,8 @@ byte safetyTime, beeperFlag, sensorPressure;
 // byte beeperFlag;
 // byte sensorPressure;
 
+
+
 const char* ssid = "maslobot1";  
 const char* password = "1234567890";
 
@@ -56,23 +58,39 @@ ADS1115 ADS(0x48);
 
 TFT_eSPI tft = TFT_eSPI();
 
-long totalTime = 0;
-long endTime;
+long currentTime = 0;
+long endTime = 0;
 
-bool isFilled = 0; // флаг достижения порогового значения цикла
-bool isWarmed = 0;
 bool endFlag = 0; // флаг окончания всего процесса
-unsigned int pressure = 0; // давление
+// unsigned int pressure = 0; // давление
 bool wasStartedFlag = 0; // начинался ли процесс
 
-int maxPress, minPress, maxTemp, minTemp;
+struct pastTime {
+  unsigned int hours, mins, sec;
+};
+
+struct allTheTime {
+  long current, end, beforeStart;
+  unsigned int totalHour, totalMins, left, leftHour, leftMins, leftSec, continueTime;
+  bool continueFlag;
+  pastTime past;
+};
+
+allTheTime myTime;
+
+struct mySensors {
+  unsigned int pressure, temp;
+  int maxPress, minPress, maxTemp, minTemp;
+  bool isFilled, isWarmed = 0;
+};
+
+mySensors sensor;
+
 
 byte chozenSeed = 0; // номер выбранной культуры (от 0 до ХХ)
 bool flag = 0;
 long timeBeforeStart = 0;
 int arrayLen;
-unsigned int timeLeft, timeLeftHour, timeLeftMins, timeLeftSec;
-unsigned int totalHour, totalMins, pastHours, pastMins, pastSec;
 
 int temp = 0; // заглушка для показаний температуры
 
@@ -111,15 +129,15 @@ String dnsName = "maslobot";
 bool isConnectedToRouter;
 
 String getSensorReadings(){
-  pork["timeLeftHour"] = timeLeftHour;
-  pork["timeLeftMins"] =  timeLeftMins;
-  pork["timeLeftSec"] = timeLeftSec;
-  pork["maxPress"] = maxPress;
-  pork["minPress"] = minPress;
-  pork["pastHours"] = pastHours;
-  pork["pastMins"] = pastMins;
-  pork["pastSec"] = pastSec;
-  pork["pressure"] = pressure;
+  pork["timeLeftHour"] = myTime.leftHour; 
+  pork["timeLeftMins"] = myTime.leftMins;
+  pork["timeLeftSec"] = myTime.leftSec;
+  pork["maxPress"] = sensor.maxPress;
+  pork["minPress"] = sensor.minPress;
+  pork["pastHours"] = myTime.past.hours;
+  pork["pastMins"] = myTime.past.mins;
+  pork["pastSec"] = myTime.past.sec;
+  pork["pressure"] = sensor.pressure;
   
   String jsonWS;
   serializeJson(pork, jsonWS);
@@ -127,3 +145,5 @@ String getSensorReadings(){
 }
 
 int tableIndex, rowIndex;
+
+int timeTime;
