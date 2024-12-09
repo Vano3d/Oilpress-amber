@@ -532,48 +532,7 @@ void loop() {
         stopProcess();
         // Дополнительные действия при окончании процесса
     }
-  // for (int i = 0; i < arrayLen; i += 1) {
-  //   if (myTime.current < mySeed.time(0) * 60) {
-  //     sensor.maxPress = mySeed.maxPress(0);
-  //     sensor.minPress = mySeed.minPress(0);
-  //     sensor.maxTemp = mySeed.maxTemp(0);
-  //     sensor.minTemp = mySeed.minTemp(0);
-  //   } else if (myTime.current >= mySeed.time(i) * 60) {
-  //     sensor.maxPress = mySeed.maxPress(i+1);
-  //     sensor.minPress = mySeed.minPress(i+1);
-  //     sensor.maxTemp = mySeed.maxTemp(i+1);
-  //     sensor.minTemp = mySeed.minTemp(i+1);
-  //   }
-  // }
-  // запуск процесса с текущего давления
-  // if (startBtn.hold() && !wasStartedFlag) {
-  //   switch (currentScreen) { // сработает не для всех экранов
-  //   case 5:
-  //   case 6:
-  //   case 7:
-  //   case 8:
-  //     break;
-
-  //   default:
-  //     continueFlag = 1;
-  //     break;
-  //   }
-  // }
-  /* Проходимся по массиву культуры, прверяем давление. Если выше нижнего значения диапазона,
-  то устанавливаем инкремент к общему времени на значение, соответствующее предыдущему
-  диапазону. Начинаем с 3-го диапазона, раньше не имеет смысла. Таким образом, если
-  поднят флаг continueFlag, запустится процесс не с начала, а со времени, соответствующему
-  диапазону давлений.
-  */
-  // for (int i = 0; i < arrayLen - 1; i = i + 3) {
-  //   if (doc[chozenSeed]["value"][i + 7].as<int>() > pressure && continueFlag == 1) {
-  //     continueTime = doc[chozenSeed]["value"][i + 2].as<int>() * 60;
-  //     continueFlag = 0;
-  //     startProcess();
-  //     stopLed.stop();
-  //     currentScreen = 4;
-  //   }
-  // }
+  
 
   // отрубаем пресс по времени окончания
   if (myTime.current >= myTime.end && wasStartedFlag) {
@@ -676,18 +635,6 @@ void loop() {
     Serial.println(myTime.end);
     Serial.print("C = "); 
    Serial.println(thermocouple.readCelsius());
-
-    // Serial.print("ADC out: ");
-
-    //     Serial.print("ADC Out");
-    //  Serial.println(ADS.getValue());
-
-    //          Serial.print("Safety time");
-    //  Serial.println(safetyTime);
-    //              Serial.print("Total time");
-    //  Serial.println(currentTime);
-    //          Serial.print("pressure");
-    //  Serial.println(pressure);
 
 
   }
