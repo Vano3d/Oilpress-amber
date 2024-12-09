@@ -146,3 +146,45 @@ void updParams() {
   beeperFlag = sok[0]["beeper"].as <bool> ();
   sensorPressure = sok[0]["sensor"].as <int> ();
 }
+
+void encRotate(bool isLeft) { 
+  if (!wasStartedFlag) {
+    switch (currentScreen) {
+      case 1: // экран с культурами
+        chozenSeed = constrain(chozenSeed + (isLeft ? -1 : 1), 0, doc.size() - 1);
+        
+        if (doc.size() > PROGS_ON_SCREEN && (chozenSeed + 1) % PROGS_ON_SCREEN == 0) {
+          cultureScreenNuber = constrain(cultureScreenNuber - 1, 1, cultureScreens);
+          firstCulture = constrain(firstCulture - PROGS_ON_SCREEN, 0, (cultureScreens - 1) * PROGS_ON_SCREEN);
+          mainScreenUpdate();
+        }
+        if (isLeft) {
+          cursorBack();
+        } else {
+          cursorForward();
+        }
+        break;
+        
+      case 2: // экран с диапазонами
+        if (isLeft ? diapScreenNumber > 1 : diapScreenNumber < diapScreens) {
+          if (isLeft) {
+            diapScreenNumber--;
+          } else {
+            diapScreenNumber++;
+          }
+          firstDiap = (diapScreenNumber - 1) * 2;
+          diapazonsForParams();
+        }
+        break;
+        
+      case 6:
+      case 8:
+        currentScreen = 1;
+        tftMainScreen();
+        break;
+        
+      default:
+        break;
+    }
+  }
+}

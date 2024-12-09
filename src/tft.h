@@ -110,8 +110,8 @@ void plotChart() {
 
 void nameAndTime() {
 myTime.end = 0;
-    myTime.totalHour = 0;
-    myTime.leftMins = 0;
+    // myTime.totalHour = 0;
+    // myTime.leftMins = 0;
 
     myTime.end = mySeed.calcEndTime();
     myTime.totalHour = myTime.end / 3600;

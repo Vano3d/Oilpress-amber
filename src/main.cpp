@@ -331,66 +331,9 @@ void loop() {
  /* 1-mainScreen, 2-diapazonScreen, 3-chartScreen, 4-processScreen, 
 5-alarmScreen, 6-endScreen, 7-WiFi connect screen, 8-WiFi info screen 
 */
-  if (eb.left() && !wasStartedFlag) {
-    switch (currentScreen) {
-    case 1: // если на экране с культурами
-      chozenSeed = constrain(chozenSeed - 1, 0, doc.size() - 1);
-      if (doc.size() > PROGS_ON_SCREEN && (chozenSeed+1)%PROGS_ON_SCREEN == 0) {
-        cultureScreenNuber = constrain(cultureScreenNuber - 1, 1, cultureScreens);
-        firstCulture = constrain(firstCulture - PROGS_ON_SCREEN, 0, (cultureScreens-1)*PROGS_ON_SCREEN);
-        mainScreenUpdate();
-      }
-      cursorBack();
-      break;
+  if (eb.left() && !wasStartedFlag) encRotate(true);
 
-    case 2: // если на экране с диапазонами
-              if (diapScreenNumber > 1) {
-                diapScreenNumber--;
-                firstDiap = (diapScreenNumber - 1) * 2;
-                diapazonsForParams();
-            }
-
-      break;
-    case 6:
-    case 8:
-      currentScreen = 1;
-      tftMainScreen();
-    default:
-      break;
-    }
-  }
-
-  if (eb.right()) {
-    switch (currentScreen) {
-    case 1: // если на экране с культурами
-      chozenSeed = constrain(chozenSeed + 1, 0, doc.size() - 1);
-      if (doc.size() > PROGS_ON_SCREEN && chozenSeed%PROGS_ON_SCREEN == 0) {
-        cultureScreenNuber = constrain(cultureScreenNuber + 1, 1, cultureScreens);
-        firstCulture = constrain(firstCulture + PROGS_ON_SCREEN, 0, (cultureScreens-1)*PROGS_ON_SCREEN);
-        mainScreenUpdate();
-      }
-      cursorForward();
-      break;
-    case 2: // если на экране с диапазонами
-            if (diapScreenNumber < diapScreens) {
-                diapScreenNumber++;
-                firstDiap = (diapScreenNumber - 1) * 2;
-                diapazonsForParams();
-            }
-      // if (arrayLen > 24 && diapScreenNumber != diapScreens) {
-      //   diapScreenNumber = constrain(diapScreenNumber + 1, 1, diapScreens);
-      //   firstDiap = constrain(firstDiap + 8, 0, (diapScreens-1)*8);
-      //   diapazonsForParams();
-      // }
-      break;
-    case 6:
-    case 8:
-      currentScreen = 1;
-      tftMainScreen();
-    default:
-      break;
-    }
-  }
+  if (eb.right()) encRotate(false);
 
   // Переходы с главного экрана к диапазонам по клику энкодера
 
@@ -400,12 +343,8 @@ void loop() {
       currentScreen = 2;
       diapazonScreen();
       break;
-    case 2: // если на диапазонах, переходим на чарт
-      currentScreen = 3;
-      chartScreen();
-      break;
-    case 3:
-    case 8: // если экран с чартом или WiFi, переходим на главный
+    case 2:
+    case 8: // если экран с диапазоном или WiFi, переходим на главный
       currentScreen = 1;
       tftMainScreen();
       break;

@@ -74,7 +74,8 @@ void handleStartForm(AsyncWebServerRequest *request)
     int rowIndex = request->getParam("row")->value().toInt();
 
     chozenSeed = tableIndex;
-    Serial.println(chozenSeed);
+    mySeed.updateSeed(chozenSeed);
+    
 
     myTime.totalHour = 0;
     myTime.leftMins = 0;
@@ -83,17 +84,13 @@ void handleStartForm(AsyncWebServerRequest *request)
     myTime.totalHour = myTime.end / 3600;
     myTime.leftMins = (myTime.end - myTime.totalHour * 3600) / 60;  
 
-    // Serial.println(doc[chozenSeed]["name"].as <String>());
-    // Serial.println(chozenSeed);
-
     if (doc[chozenSeed]["stages"].is<JsonArray>())
     {
       JsonArray valueArray = doc[chozenSeed]["stages"];
       if (valueArray.size() > rowIndex - 3)
       {
         continueTime = valueArray[rowIndex - 3].as<int>() * 60;
-        // Serial.print("Continue time set to: ");
-        // Serial.println(continueTime);
+
       }
       else
       {
@@ -109,6 +106,13 @@ void handleStartForm(AsyncWebServerRequest *request)
     // поднимаем флаг на запуск процесса
     webStartFlag = true;
     request->send(200, "text/plain", "Command received");
+    Serial.print("Handler Serial: ");
+    Serial.println(chozenSeed);
+    Serial.print("Total hour: ");
+    Serial.println(myTime.leftHour);
+    Serial.print("Total mins: ");
+    Serial.println(myTime.leftMins);
+    
   }
   else
   {
