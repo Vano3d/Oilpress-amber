@@ -64,7 +64,7 @@ void SendHTMLStream(AsyncWebServerRequest *request) {
 }
 
 void setup() {
-
+  Serial.begin(115200);
   if (!LittleFS.begin(FORMAT_IF_FAILED)) {
     Serial.println("LittleFS Mount Failed");
     return;
@@ -92,7 +92,7 @@ void setup() {
   timerIndicatorDelay.setInterval(200);
   processUpdTmr.setInterval(1000);
 
-  Serial.begin(115200);
+
 
   // Подключение внешнего АЦП
   checkADCConnection();
@@ -674,6 +674,8 @@ void loop() {
     Serial.println(arrayLen);
     Serial.print("End time: ");
     Serial.println(myTime.end);
+    Serial.print("C = "); 
+   Serial.println(thermocouple.readCelsius());
 
     // Serial.print("ADC out: ");
 
