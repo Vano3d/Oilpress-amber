@@ -349,11 +349,7 @@ void loop() {
                 firstDiap = (diapScreenNumber - 1) * 2;
                 diapazonsForParams();
             }
-      // if (arrayLen >= 23 && diapScreenNumber != 1) {
-      //   diapScreenNumber = constrain(diapScreenNumber - 1, 1, diapScreens);
-      //   firstDiap = constrain(firstDiap - 8, 0, (diapScreens-1)*8);
-      //   diapazonsForParams();
-      // }
+
       break;
     case 6:
     case 8:
@@ -470,8 +466,11 @@ void loop() {
     pump_off();
     sensor.isFilled = 0;
   } else if (sensor.pressure <= sensor.minPress && sensor.isFilled == 0 && wasStartedFlag) {
-    if(sensor.minPress!=0) pump_on();
-    sensor.isFilled = 1;
+    if(sensor.minPress!=0) {
+      pump_on();
+      sensor.isFilled = 1;
+    } 
+    
   }
 
   if (temp >= sensor.maxTemp && sensor.isWarmed) {
@@ -488,6 +487,7 @@ void loop() {
         sensor.minPress = mySeed.minPress(currentStage);
         sensor.maxTemp = mySeed.maxTemp(currentStage);
         sensor.minTemp = mySeed.minTemp(currentStage);
+
     } else {
         // Обработка окончания всех этапов
         endFlag = true;
@@ -595,7 +595,12 @@ void loop() {
     Serial.println(arrayLen);
     Serial.print("End time: ");
     Serial.println(myTime.end);
-
+    Serial.print("Press diaps: ");
+    Serial.print(sensor.maxPress);
+    Serial.print("-");
+    Serial.println(sensor.minPress);
+    Serial.print("Is filled: ");
+    Serial.println(sensor.isFilled);
 
   }
   ws.cleanupClients();

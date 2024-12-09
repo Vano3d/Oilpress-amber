@@ -10,7 +10,7 @@ void some(String name, String eee) {
 void printDiapazons() {
     for (int i = firstDiap; i < firstDiap + 2 && i < allDiaps; i++) {
         // Разделитель
-        tft.println(F("-=-"));
+        tft.println(F("-----"));
         
         // Вывод давления
         tft.print(doc[chozenSeed]["stages"][i]["maxPress"].as<int>());
