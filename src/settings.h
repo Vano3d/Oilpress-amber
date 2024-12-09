@@ -60,7 +60,6 @@ TFT_eSPI tft = TFT_eSPI();
 
 
 bool endFlag = 0; // флаг окончания всего процесса
-// unsigned int pressure = 0; // давление
 bool wasStartedFlag = 0; // начинался ли процесс
 
 struct pastTime {
@@ -98,7 +97,21 @@ bool stopLedFlag = 0;
 /* 1-mainScreen, 2-diapazonScreen, 3-chartScreen, 4-processScreen, 
 5-alarmScreen, 6-endScreen, 7-WiFi connect screen, 8-WiFi info screen 
 */
-byte currentScreen = 1; // текущий экран 
+
+enum Screen {
+  MAIN = 1,
+  DIAPAZONS,
+  CHART,
+  PROCESS,
+  ALARM,
+  END, 
+  WIFICONNECT,
+  WIFIINFO
+};
+
+Screen currentScreen = MAIN;
+
+// byte currentScreen = 1; // текущий экран 
 uint16_t textWidth, diapTextWidth;
 unsigned int allDiaps; // количество всех диапазонов
 byte diapScreens; // экранов с диапазонами
@@ -147,6 +160,8 @@ String getSensorReadings(){
 int tableIndex, rowIndex;
 
 int currentStage;
+
+
 
 // #include "max6675.h"
 

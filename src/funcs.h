@@ -53,7 +53,7 @@ void startProcess() {
   wasStartedFlag = 1;
   sensor.isFilled = 0;
   stopLed.stop();
-  currentScreen = 4;
+  currentScreen = PROCESS;
   if (beeperFlag) tone(BUZZER, 1500, 150);
   Serial.print("Запущена культура № ");
   Serial.println(chozenSeed);
@@ -63,6 +63,7 @@ void startProcess() {
 
 void stopProcess() {
   pump_off();
+  heat_off();
   buzzFlag = 1;
   endTimer.setTimeout(100);
   endFlag = 1;
@@ -70,7 +71,7 @@ void stopProcess() {
   myTime.current = 0;
   continueTime = 0;
   Serial.println("Отжим остановлен");
-  currentScreen = 6;
+  currentScreen = END;
 }
 
 void checkADCConnection() {
@@ -150,7 +151,7 @@ void updParams() {
 void encRotate(bool isLeft) { 
   if (!wasStartedFlag) {
     switch (currentScreen) {
-      case 1: // экран с культурами
+      case MAIN: // экран с культурами
         chozenSeed = constrain(chozenSeed + (isLeft ? -1 : 1), 0, doc.size() - 1);
         
         if (doc.size() > PROGS_ON_SCREEN && (chozenSeed + 1) % PROGS_ON_SCREEN == 0) {
@@ -165,7 +166,7 @@ void encRotate(bool isLeft) {
         }
         break;
         
-      case 2: // экран с диапазонами
+      case DIAPAZONS: // экран с диапазонами
         if (isLeft ? diapScreenNumber > 1 : diapScreenNumber < diapScreens) {
           if (isLeft) {
             diapScreenNumber--;
@@ -177,9 +178,9 @@ void encRotate(bool isLeft) {
         }
         break;
         
-      case 6:
-      case 8:
-        currentScreen = 1;
+      case END:
+      case WIFIINFO:
+        currentScreen = MAIN;
         tftMainScreen();
         break;
         
@@ -187,4 +188,21 @@ void encRotate(bool isLeft) {
         break;
     }
   }
+}
+
+void encClick() {
+      switch (currentScreen) {
+    case MAIN: // если на главном экране, переходим на диапазоны
+      currentScreen = DIAPAZONS;
+      diapazonScreen();
+      break;
+    case DIAPAZONS:
+    case WIFIINFO: // если экран с диапазоном или WiFi, переходим на главный
+      currentScreen = MAIN;
+      tftMainScreen();
+      break;
+
+    default:
+      break;
+    }
 }

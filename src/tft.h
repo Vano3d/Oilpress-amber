@@ -146,7 +146,7 @@ void mainScreenUpdate() {
 }
 //вывод меню выбора культуры
 void tftMainScreen() {
-  currentScreen = 1;
+  currentScreen = MAIN;
   tft.fillScreen(TFT_BLACK);
   diapScreenNumber = 1;
   firstDiap = 0;
@@ -206,7 +206,7 @@ void processScreen() {
 // экран окончания процесса
 void endScreen()
 {
-  currentScreen = 6;
+  currentScreen = END;
   tft.fillScreen(TFT_BLACK);
   tft.loadFont(myFont28);
   tft.setCursor(5, 5);
@@ -247,7 +247,7 @@ void endScreen()
 // аварийный экран
 void alarmScreen()
 {
-  currentScreen = 5;
+  currentScreen = ALARM;
   tft.fillScreen(TFT_BLACK);
   tft.loadFont(myFont28);
   tft.setTextColor(TFT_RED, TFT_BLACK);
@@ -283,7 +283,7 @@ void cursorBack() {
 }
 
 void wifiConnectScreen() {
-  currentScreen = 7;
+  currentScreen = WIFICONNECT;
   tft.fillScreen(TFT_BLACK);
   tft.loadFont(myFont28);
   tft.setTextColor(TFT_ORANGE, TFT_BLACK);
@@ -301,7 +301,7 @@ void wifiConnectScreen() {
 }
 
 void wifiScreenRouter() {
-  currentScreen = 8;
+  currentScreen = WIFIINFO;
   tft.fillScreen(TFT_BLACK);
   tft.loadFont(myFont28);
   tft.setTextColor(TFT_ORANGE, TFT_BLACK);
@@ -343,7 +343,7 @@ void wifiScreenRouter() {
 }
 
 void wifiScreenAP() {
-  currentScreen = 8;
+  currentScreen = WIFIINFO;
   tft.fillScreen(TFT_BLACK);
   tft.loadFont(myFont28);
   tft.setTextColor(TFT_ORANGE, TFT_BLACK);

@@ -260,13 +260,6 @@ void loop() {
     sensor.pressure = constrain(ADS.getValue()/pressureDivider,0,1000);
   }
 
-  // if (saveSetsFlag) {
-  //   saveSets();
-  //   saveSetsFlag = false;
-  // }
-
-  // disp.tick();
-
   ElegantOTA.loop();
 
   // находим длину массива выбранной культуры
@@ -327,10 +320,6 @@ void loop() {
   /*
 Прокрутка культур или диапазонов
   */
-
- /* 1-mainScreen, 2-diapazonScreen, 3-chartScreen, 4-processScreen, 
-5-alarmScreen, 6-endScreen, 7-WiFi connect screen, 8-WiFi info screen 
-*/
   if (eb.left() && !wasStartedFlag) encRotate(true);
 
   if (eb.right()) encRotate(false);
@@ -338,38 +327,23 @@ void loop() {
   // Переходы с главного экрана к диапазонам по клику энкодера
 
   if (eb.click() && !wasStartedFlag) {
-    switch (currentScreen) {
-    case 1: // если на главном экране, переходим на диапазоны
-      currentScreen = 2;
-      diapazonScreen();
-      break;
-    case 2:
-    case 8: // если экран с диапазоном или WiFi, переходим на главный
-      currentScreen = 1;
-      tftMainScreen();
-      break;
-
-    default:
-      break;
-    }
+    encClick();
   }
-/* 1-mainScreen, 2-diapazonScreen, 3-chartScreen, 4-processScreen, 
-5-alarmScreen, 6-endScreen, 7-WiFi connect screen, 8-WiFi info screen 
-*/
+
   // кнопка старта процесса
   if (startBtn.click() && !wasStartedFlag) { // не сработает, если находимся на аварийном экране или экране окончания
     switch (currentScreen) {
-    case 8: // если экран с WiFi, переходим на главный
-      currentScreen = 1;
+    case WIFIINFO: // если экран с WiFi, переходим на главный
+      currentScreen = MAIN;
       tftMainScreen();
       break; 
-    case 5:
-    case 6:
+    case ALARM:
+    case END:
       break;
       // запускает процесс на других экранах
     default:
       stopLed.stop();
-      currentScreen = 4;
+      currentScreen = PROCESS;
       startProcess();
       break;
     }
@@ -382,11 +356,11 @@ void loop() {
   }
 
   // если находимся на аварийном экране, то кнопка "стоп" переводит на главный экран
-  if (currentScreen == 5) {
+  if (currentScreen == ALARM) {
     if (stopBtn.click()) {
       stopLed.stop();
       tftMainScreen();
-      currentScreen = 1;
+      currentScreen = MAIN;
     }
   }
 
@@ -409,7 +383,6 @@ void loop() {
       pump_on();
       sensor.isFilled = 1;
     } 
-    
   }
 
   if (temp >= sensor.maxTemp && sensor.isWarmed) {
@@ -440,7 +413,6 @@ void loop() {
     stopProcess();
     stopLed.blink(100, 200, 600);
     endScreen();
-    // currentTime = 0;
   }
 
   // пищит три раза после окончания отжима
