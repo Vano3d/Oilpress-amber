@@ -137,6 +137,7 @@ String getSensorReadings(){
   pork["pastMins"] = myTime.past.mins;
   pork["pastSec"] = myTime.past.sec;
   pork["pressure"] = sensor.pressure;
+  pork["temperature"] = sensor.temp;
   
   String jsonWS;
   serializeJson(pork, jsonWS);
