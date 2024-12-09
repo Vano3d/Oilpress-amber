@@ -114,52 +114,28 @@ void setup() {
   delay(100);
 
   // Файл с параметрами отжима
-  if (LittleFS.exists("/sets.txt")) {
-    File file = LittleFS.open("/sets.txt", "r");
-    DeserializationError error = deserializeJson(doc, file);
-    if (error) {
-      Serial.print(F("deserializeJson() failed: "));
-      Serial.println(error.f_str());
-      return;
-    }
-    file.close();
-  } else {
+   if (!LittleFS.exists("/sets.txt")) {
     File file = LittleFS.open("/sets.txt", "w");
     file.print(factorySettings);
-    DeserializationError error = deserializeJson(doc, file);
-    if (error) {
-      Serial.print(F("deserializeJson() failed: "));
-      Serial.println(error.f_str());
-      return;
-    }
     file.close();
   }
-  // serializeJson(doc, Serial);
+  File file = LittleFS.open("/sets.txt", "r");
+  deserializeJson(doc, file); //  Ошибка десериализации обрабатывается в другом месте
+  file.close();
 
   Serial.println();
   delay(100);
 
   // // Файл с настройками
-  if (LittleFS.exists("/params.txt")) {
-    File f = LittleFS.open("/params.txt", "r");
-    DeserializationError error = deserializeJson(sok, f);
-    if (error) {
-      Serial.print(F("deserializeJson() failed: "));
-      Serial.println(error.f_str());
-      return;
-    }
-    f.close();
-  } else {
+   if (!LittleFS.exists("/params.txt")) {
     File f = LittleFS.open("/params.txt", "w");
     f.print(facttoryParams);
-    DeserializationError error = deserializeJson(sok, f);
-    if (error) {
-      Serial.print(F("deserializeJson() failed: "));
-      Serial.println(error.f_str());
-      return;
-    }
     f.close();
   }
+  File f = LittleFS.open("/params.txt", "r");
+  deserializeJson(sok, f); //  Ошибка десериализации обрабатывается в другом месте
+  f.close();
+  
 
   Serial.println();
 
@@ -202,45 +178,36 @@ void setup() {
     Serial.print(".");
   }
       // Если подключение не удалось, создаем точку доступа
-  if (WiFi.status() != WL_CONNECTED) {
+      while (WiFi.status() != WL_CONNECTED && millis()<5000) {
+    delay(100);
+    Serial.print(".");
+  }
+  if (WiFi.status() == WL_CONNECTED) {
+    Serial.println("Подключено к роутеру WiFi");
+    Serial.print("IP-адрес: ");
+    Serial.println(WiFi.localIP());
+    isConnectedToRouter = true;
+    wifiScreenRouter();
+  } else {
     Serial.println("Не удалось подключиться к WiFi, создаем точку доступа...");
-    WiFi.disconnect(true);
-    delay(300);
-    
-    // Настройка точки доступа
     WiFi.mode(WIFI_AP_STA);
     WiFi.softAP(ssid, password);
-    // WiFi.softAPConfig(localIP, localIP, subnet); // Установка статического IP для AP
-
     Serial.print("Точка доступа создала IP-адрес: ");
     Serial.println(WiFi.softAPIP());
     isConnectedToRouter = false;
-  }
-   
-   if (isConnectedToRouter) {
-    wifiScreenRouter();
-   } else {
     wifiScreenAP();
-   }
-    
-  //  tftMainScreen();
+  }
   
   server.begin();
 
   Serial.println("mDNS responder started");
   // Initialize mDNS
-const int maxRetries = 5;
-int retryCount = 0;
-while (!MDNS.begin(dnsName) && retryCount < maxRetries) {
-  Serial.println("Error setting up MDNS responder! Retrying...");
-  delay(1000);
-  retryCount++;
-}
 
-if (retryCount == maxRetries) {
-  Serial.println("Failed to initialize MDNS after multiple attempts.");
-  // Обработка ошибки, возможно, безопасное завершение или перезагрузка
-}
+ if (!MDNS.begin(dnsName)) {
+    Serial.println("Error setting up MDNS responder!");
+  } else {
+    Serial.println("mDNS responder started");
+  }
 
   initWebSocket();
 
@@ -276,9 +243,9 @@ if (retryCount == maxRetries) {
   // server.on("/web-start", HTTP_GET, [](AsyncWebServerRequest *request)
   //           { handleWebStart(request); });
 
-  safetyTime = sok[0]["protection"].as <int> ();
-  beeperFlag = sok[0]["beeper"].as <bool> ();
-  sensorPressure = sok[0]["sensor"].as <int> ();
+  safetyTime = sok["protection"].as <int> ();
+  beeperFlag = sok["beeper"].as <bool> ();
+  sensorPressure = sok["sensor"].as <int> ();
 
     myTime.end = 0;
     myTime.totalHour = 0;
