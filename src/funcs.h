@@ -140,3 +140,9 @@ long calcEndTime(int seed) {
     }
     return sum * 60;
 }
+
+void updParams() {
+  safetyTime = sok[0]["protection"].as <int> ();
+  beeperFlag = sok[0]["beeper"].as <bool> ();
+  sensorPressure = sok[0]["sensor"].as <int> ();
+}

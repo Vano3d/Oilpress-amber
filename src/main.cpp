@@ -98,12 +98,7 @@ void setup() {
   checkADCConnection();
 
   if (isADCConnected) {
-   ADS.begin();
-   ADS.setGain(1);
-   ADS.requestADC(0);
-   delay(100);
-   while (ADS.isBusy());
-   delay(100);
+  Serial.println("ADS connected :-)");
 
  } else {
     Serial.println("Failed to initialize ADS.");
@@ -114,7 +109,7 @@ void setup() {
   delay(100);
 
   // Файл с параметрами отжима
-   if (!LittleFS.exists("/sets.txt")) {
+  if (!LittleFS.exists("/sets.txt")) {
     File file = LittleFS.open("/sets.txt", "w");
     file.print(factorySettings);
     file.close();
@@ -150,6 +145,8 @@ void setup() {
    if (sok[0]["beeper"].as <bool>()) {
     tone(BUZZER, 2000, 100);
   }
+
+  updParams();
 
    wifiConnectScreen();
 
@@ -212,9 +209,6 @@ void setup() {
   initWebSocket();
 
   // Если просто зашли на адрес контроллера, пушится всё что в SendHTML
-  // server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
-  //   request -> send(200, "text/html", SendHTML());
-  // });
   server.on("/", HTTP_GET, SendHTMLStream);
 
   // Восстановление заводских настроек
@@ -243,9 +237,9 @@ void setup() {
   // server.on("/web-start", HTTP_GET, [](AsyncWebServerRequest *request)
   //           { handleWebStart(request); });
 
-  safetyTime = sok["protection"].as <int> ();
-  beeperFlag = sok["beeper"].as <bool> ();
-  sensorPressure = sok["sensor"].as <int> ();
+  // safetyTime = sok[0]["protection"].as <int> ();
+  // beeperFlag = sok[0]["beeper"].as <bool> ();
+  // sensorPressure = sok[0]["sensor"].as <int> ();
 
     myTime.end = 0;
     myTime.totalHour = 0;
@@ -263,13 +257,13 @@ void loop() {
   if (ADS.isBusy() == false)
   {
     ADS.requestADC(0);
-    sensor.pressure = constrain(ADS.getValue()/pressureDivivder,0,1000);
+    sensor.pressure = constrain(ADS.getValue()/pressureDivider,0,1000);
   }
 
-  if (saveSetsFlag) {
-    saveSets();
-    saveSetsFlag = false;
-  }
+  // if (saveSetsFlag) {
+  //   saveSets();
+  //   saveSetsFlag = false;
+  // }
 
   // disp.tick();
 
@@ -300,24 +294,27 @@ void loop() {
 
   // server.handleClient();
 
+
+
   if (timerIndicatorDelay.isReady()) display.showNumber(sensor.pressure);
 
 
   // Коэффициены могут незначительно менять в зависимости от делителя
   switch (sensorPressure) {
   case 60:
-    pressureDivivder = PRESSURE60;
+    pressureDivider = PRESSURE60;
     break;
 
   case 70:
-    pressureDivivder = PRESSURE70;
+    pressureDivider = PRESSURE70;
     break;
 
   case 80:
-    pressureDivivder = PRESSURE80;
+    pressureDivider = PRESSURE80;
     break;
 
   default:
+  pressureDivider = 1.0; // Значение по умолчанию
     break;
   }
 

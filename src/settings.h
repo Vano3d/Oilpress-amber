@@ -5,7 +5,7 @@
 #define PRESSURE70 37.7 // normal 38.1 
 #define PRESSURE80 33 // normal 33
 #define FORMAT_IF_FAILED 1
-#define DEBUG 1
+#define DEBUG 0
 #define I2C_SDA 4
 #define I2C_SCL 5
 
@@ -16,7 +16,7 @@
 #define CORDX 100
 #define CORDY 240
 
-float pressureDivivder;
+float pressureDivider;
 byte safetyTime, beeperFlag, sensorPressure;
 // byte beeperFlag;
 // byte sensorPressure;

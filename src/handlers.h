@@ -25,7 +25,8 @@ void handleSendFile(AsyncWebServerRequest *request)
     f.print(dataParam->value());
     f.close();
     request->send(200, "text/html", "OK");
-    saveSetsFlag = true;
+    saveSets();
+    // saveSetsFlag = true;
 
   }
 }
@@ -46,6 +47,7 @@ void handleSendSettings(AsyncWebServerRequest *request)
 
     // Обновляем файл для отображения в web
     serializeJson(sok, jsonParams);
+    updParams();
 
     if (error)
     {
@@ -136,7 +138,6 @@ void handleWebStop(AsyncWebServerRequest *request)
   request->send(200, "text/plain", "Web stopped");
   Serial.println("Stopped via web");
 }
-
 
 
 void notifyClients(String sensorReadings)
