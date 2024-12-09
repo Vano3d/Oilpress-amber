@@ -81,41 +81,12 @@ void barrelOff() {
    tft.fillRect(CORDX-2, CORDY-9, CORDX+42, CORDY+42, TFT_BLACK);
 }
 
-// рисуем график
-void plotChart() {
-  tft.setCursor(0, 300);
-  byte coordX;
-  byte coordY;
-  byte coordX2;
-  byte coordY2;
-  float coeffX = 240.0 / (float(myTime.end / 60));
-  float coeffY = 120.0 / float(doc[chozenSeed]["value"][arrayLen - 3].as < int > ());
-
-  for (int i = 0; i < arrayLen - 1; i = i + 3) {
-    coordX = doc[chozenSeed]["value"][i + 2].as < int > () * coeffX - 1;
-
-    byte j;
-    i < arrayLen - 4 ? j = i + 3 : j = i;
-    coordY = 240 - doc[chozenSeed]["value"][j].as < int > () * coeffY;
-    coordX2 = doc[chozenSeed]["value"][i + 5].as < int > () * coeffX - 1;
-
-    byte k;
-    i == arrayLen - 6 ? k = i + 3 : k = i + 6;
-    coordY2 = 240 - doc[chozenSeed]["value"][k].as < int > () * coeffY;
-
-    tft.fillCircle(coordX, coordY, 2, TFT_WHITE);
-    if (i < arrayLen - 5) tft.drawLine(coordX, coordY, coordX2, coordY2, TFT_WHITE);
-  }
-}
-
 void nameAndTime() {
 myTime.end = 0;
-    // myTime.totalHour = 0;
-    // myTime.leftMins = 0;
 
-    myTime.end = mySeed.calcEndTime();
-    myTime.totalHour = myTime.end / 3600;
-    myTime.leftMins = (myTime.end - myTime.totalHour * 3600) / 60;  
+myTime.end = mySeed.calcEndTime();
+myTime.totalHour = myTime.end / 3600;
+myTime.leftMins = (myTime.end - myTime.totalHour * 3600) / 60;  
 
 Serial.print("Name: ");
 Serial.println(mySeed.name());
@@ -133,15 +104,7 @@ Serial.println(myTime.end);
   tft.setCursor(5, 38);
   tft.setTextColor(TFT_ORANGE, TFT_BLACK);
   tft.print("всего ");
-    
 
-    
-    Serial.print("Total hour: ");
-    Serial.println(myTime.totalHour);
-    Serial.print("Total mins: ");
-    Serial.println(myTime.leftMins);
-
-    
   if (myTime.totalHour != 0) {
 
     tft.print(myTime.totalHour);
@@ -211,11 +174,6 @@ void diapazonScreen() {
   diapazonsForParams();
 }
 
-// экран с графиком
-void chartScreen() {
-  nameAndTime();
-  plotChart();
-}
 
 // Экран с процессом
 void processScreen() {
