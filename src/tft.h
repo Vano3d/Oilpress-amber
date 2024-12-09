@@ -6,30 +6,35 @@ void some(String name, String eee) {
 }
 
 // вывод диапазонов
+
 void printDiapazons() {
-    for (int i = firstDiap; i < firstDiap+3; i += 1) {
-    if (1==1) {
-      // if ((doc[chozenSeed]["value"][i].as <int> ()) !=NULL) {
-      tft.print(doc[chozenSeed]["stages"][i]["maxPress"].as<int>());
-      tft.print(F("-"));
-      tft.print(doc[chozenSeed]["stages"][i]["minPress"].as<int>());
-      tft.println(F(" бар "));
-      tft.print(F(" "));
-      tft.print(doc[chozenSeed]["stages"][i]["maxTemp"].as<int>());
-      tft.print(F("-"));
-      tft.print(doc[chozenSeed]["stages"][i]["minTemp"].as<int>());
-      tft.println(F(" градусов"));
-      tft.print(F(" "));
-      tft.print(doc[chozenSeed]["stages"][i]["time"].as<int>());
-      tft.println(F(" мин"));
+    for (int i = firstDiap; i < firstDiap + 2 && i < allDiaps; i++) {
+        // Разделитель
+        tft.println(F("-=-"));
+        
+        // Вывод давления
+        tft.print(doc[chozenSeed]["stages"][i]["maxPress"].as<int>());
+        tft.print(F("-"));
+        tft.print(doc[chozenSeed]["stages"][i]["minPress"].as<int>());
+        tft.println(F(" бар"));
+        
+        // Вывод температуры
+        tft.print(doc[chozenSeed]["stages"][i]["maxTemp"].as<int>());
+        tft.print(F("-"));
+        tft.print(doc[chozenSeed]["stages"][i]["minTemp"].as<int>());
+        tft.println(F(" градусов"));
+        
+        // Вывод времени
+        tft.print(doc[chozenSeed]["stages"][i]["time"].as<int>());
+        tft.println(F(" мин"));
     }
-  }
 }
 
 // стрелочка вверх-вниз под диапазонами
 void drwawArrows() {
     tft.unloadFont();
-  if (allDiaps > 8) {
+    if (allDiaps > 3) {
+        // Стрелка вниз
     if (diapScreenNumber != diapScreens) {
       tft.drawLine(100, 300, 120, 310, TFT_WHITE);
       tft.drawLine(120, 310, 140, 300, TFT_WHITE);
@@ -37,25 +42,23 @@ void drwawArrows() {
       tft.drawLine(100, 310, 120, 300, TFT_WHITE);
       tft.drawLine(120, 300, 140, 310, TFT_WHITE);
     }
-  }
+    }
 }
 
 // вывод диапазонов
 void diapazonsForParams() {
-  tft.fillRect(0, 96, 240, 300, TFT_BLACK);
-  tft.setCursor(0, 100);
-  tft.loadFont(myFont24);
-  tft.setTextColor(TFT_ORANGE, TFT_BLACK);
-  allDiaps = arrayLen / 3; // кол-во всех диапазонов внутри культуры
-
-// находим количество экранов с диапазонами
-  if (allDiaps%8 == 0) {
-    diapScreens = allDiaps/8;
-  } else {
-    diapScreens = allDiaps/8 + 1;
-  }
-  printDiapazons();
-  drwawArrows();
+    tft.fillRect(0, 96, 240, 300, TFT_BLACK);
+    tft.setCursor(0, 100);
+    tft.loadFont(myFont24);
+    tft.setTextColor(TFT_ORANGE, TFT_BLACK);
+    
+    allDiaps = doc[chozenSeed]["stages"].size(); // Предполагается, что это количество стадий
+    
+    // Находим количество экранов с диапазонами (по 3 диапазона на экран)
+    diapScreens = (allDiaps % 2 == 0) ? (allDiaps / 2) : (allDiaps / 2 + 1);
+    
+    printDiapazons();
+    drwawArrows();
 }
 
 // рисуем бочонок

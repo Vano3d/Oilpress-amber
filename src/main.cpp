@@ -344,11 +344,16 @@ void loop() {
       break;
 
     case 2: // если на экране с диапазонами
-      if (arrayLen >= 23 && diapScreenNumber != 1) {
-        diapScreenNumber = constrain(diapScreenNumber - 1, 1, diapScreens);
-        firstDiap = constrain(firstDiap - 8, 0, (diapScreens-1)*8);
-        diapazonsForParams();
-      }
+              if (diapScreenNumber > 1) {
+                diapScreenNumber--;
+                firstDiap = (diapScreenNumber - 1) * 2;
+                diapazonsForParams();
+            }
+      // if (arrayLen >= 23 && diapScreenNumber != 1) {
+      //   diapScreenNumber = constrain(diapScreenNumber - 1, 1, diapScreens);
+      //   firstDiap = constrain(firstDiap - 8, 0, (diapScreens-1)*8);
+      //   diapazonsForParams();
+      // }
       break;
     case 6:
     case 8:
@@ -371,11 +376,16 @@ void loop() {
       cursorForward();
       break;
     case 2: // если на экране с диапазонами
-      if (arrayLen > 24 && diapScreenNumber != diapScreens) {
-        diapScreenNumber = constrain(diapScreenNumber + 1, 1, diapScreens);
-        firstDiap = constrain(firstDiap + 8, 0, (diapScreens-1)*8);
-        diapazonsForParams();
-      }
+            if (diapScreenNumber < diapScreens) {
+                diapScreenNumber++;
+                firstDiap = (diapScreenNumber - 1) * 2;
+                diapazonsForParams();
+            }
+      // if (arrayLen > 24 && diapScreenNumber != diapScreens) {
+      //   diapScreenNumber = constrain(diapScreenNumber + 1, 1, diapScreens);
+      //   firstDiap = constrain(firstDiap + 8, 0, (diapScreens-1)*8);
+      //   diapazonsForParams();
+      // }
       break;
     case 6:
     case 8:
