@@ -255,8 +255,6 @@ void setup() {
     myTime.past.sec = 0;
 }
 
-
-
 void loop() {
 
   mySeed.updateSeed(chozenSeed);// обновляем класс MySeed регулярно
@@ -302,18 +300,8 @@ void loop() {
 
   // server.handleClient();
 
+  if (timerIndicatorDelay.isReady()) display.showNumber(sensor.pressure);
 
-
-
-  if (timerIndicatorDelay.isReady()) {
-
-    // disp.clear();
-    // disp.print(pressure);
-    // disp.update();
-    display.showNumber(sensor.pressure);
-
-
-  }
 
   // Коэффициены могут незначительно менять в зависимости от делителя
   switch (sensorPressure) {
@@ -600,8 +588,6 @@ void loop() {
     Serial.println(arrayLen);
     Serial.print("End time: ");
     Serial.println(myTime.end);
-    Serial.print("C = "); 
-   Serial.println(thermocouple.readCelsius());
 
 
   }

@@ -148,10 +148,10 @@ int tableIndex, rowIndex;
 
 int currentStage;
 
-#include "max6675.h"
+// #include "max6675.h"
 
-int thermoDO = 34;
-int thermoCS = 35;
-int thermoCLK = 12;
+// int thermoDO = 34;
+// int thermoCS = 35;
+// int thermoCLK = 12;
 
-MAX6675 thermocouple(thermoCLK, thermoCS, thermoDO);
+// MAX6675 thermocouple(thermoCLK, thermoCS, thermoDO);
