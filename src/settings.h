@@ -5,7 +5,7 @@
 #define PRESSURE70 37.7 // normal 38.1 
 #define PRESSURE80 33 // normal 33
 #define FORMAT_IF_FAILED 1
-#define DEBUG 1
+#define DEBUG 0
 #define I2C_SDA 4
 #define I2C_SCL 5
 
@@ -131,6 +131,8 @@ String getSensorReadings(){
   pork["timeLeftSec"] = myTime.leftSec;
   pork["maxPress"] = sensor.maxPress;
   pork["minPress"] = sensor.minPress;
+  pork["maxTemp"] = sensor.maxTemp;
+  pork["minTemp"] = sensor.minTemp;
   pork["pastHours"] = myTime.past.hours;
   pork["pastMins"] = myTime.past.mins;
   pork["pastSec"] = myTime.past.sec;
@@ -142,3 +144,5 @@ String getSensorReadings(){
 }
 
 int tableIndex, rowIndex;
+
+int currentStage;

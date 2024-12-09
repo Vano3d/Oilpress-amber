@@ -84,7 +84,7 @@ void checkADCConnection() {
     }
 
     // Задержка перед следующей проверкой
-    vTaskDelay(1500 / portTICK_PERIOD_MS);
+    delay(1500);
   
 }
 

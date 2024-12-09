@@ -72,10 +72,14 @@ void handleStartForm(AsyncWebServerRequest *request)
     int rowIndex = request->getParam("row")->value().toInt();
 
     chozenSeed = tableIndex;
-    arrayLen = mySeed.length();
+    Serial.println(chozenSeed);
+
+    myTime.totalHour = 0;
+    myTime.leftMins = 0;
+
     myTime.end = mySeed.calcEndTime();
     myTime.totalHour = myTime.end / 3600;
-    myTime.leftMins = (myTime.end - myTime.totalHour * 3600) / 60;
+    myTime.leftMins = (myTime.end - myTime.totalHour * 3600) / 60;  
 
     // Serial.println(doc[chozenSeed]["name"].as <String>());
     // Serial.println(chozenSeed);
@@ -174,21 +178,3 @@ void initWebSocket()
   ws.onEvent(onEvent);
   server.addHandler(&ws);
 }
-
-// void handleWebStart(AsyncWebServerRequest *request)
-// {
-  
-//   // Получаем значение table из запроса
-//   if (!wasStartedFlag)
-//   {
-//     const AsyncWebParameter *p = request->getParam("table");
-//     int tableIndex = p->value().toInt();
-//     //Запускаем процесс
-//     chozenSeed = tableIndex;
-//     startProcess();
-//     //Отправляем ответ
-//     request->send(200, "text/plain", "Process started");
-//     Serial.print("Web-started: ");
-//     Serial.println(doc[chozenSeed]["name"].as<const char *>());
-//   }
-// }

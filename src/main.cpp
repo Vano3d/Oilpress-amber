@@ -49,10 +49,26 @@ unsigned long lastTime = 0;
 unsigned long timerDelay = 500;
 
 String param;
-uint32_t start, stop;
-int16_t val_0;
+
+
+void SendHTMLStream(AsyncWebServerRequest *request) {
+  // Создаем потоковый ответ с типом "text/html" и буфером размером 8192 байт
+  AsyncResponseStream *response = request->beginResponseStream("text/html");
+  response->print(htmlStart);
+  response->print(CSS_CONTENT);
+  response->print(htmlMiddle);
+  response->print("const data =" + jsonString + ";const paramsData = " + jsonParams + ";");
+  response->print(JS_CONTENT);
+  response->print("</body></html>");
+  request->send(response);
+}
 
 void setup() {
+
+  if (!LittleFS.begin(FORMAT_IF_FAILED)) {
+    Serial.println("LittleFS Mount Failed");
+    return;
+  }
   display.showNumber(8888);
   Wire.begin();
   Wire.setClock(100000);
@@ -84,31 +100,16 @@ void setup() {
   if (isADCConnected) {
    ADS.begin();
    ADS.setGain(1);
-      //  voltage factor
-
-  start = micros();
-  ADS.requestADC(0);
-  stop = micros();
-  // Serial.println(stop - start);
-  delay(100);
-  while (ADS.isBusy());
-  start = micros();
-  val_0 = ADS.getValue();
-  stop = micros();
-  // Serial.println(stop - start);
-  delay(100);
-
-  ADS.requestADC(0);
+   ADS.requestADC(0);
+   delay(100);
+   while (ADS.isBusy());
+   delay(100);
 
  } else {
     Serial.println("Failed to initialize ADS.");
   }
 
-  LittleFS.begin();
-  if (!LittleFS.begin(FORMAT_IF_FAILED)) {
-    Serial.println("LittleFS Mount Failed");
-    return;
-  }
+
 
   delay(100);
 
@@ -133,7 +134,7 @@ void setup() {
     }
     file.close();
   }
-  serializeJson(doc, Serial);
+  // serializeJson(doc, Serial);
 
   Serial.println();
   delay(100);
@@ -188,7 +189,7 @@ void setup() {
   Serial.print("Подключение к WiFi");
 
   // Ожидаем подключения
-  for (int i = 0; i < 5; i++) { // Ожидание 5 секунд
+  for (int i = 0; i < 6; i++) { // Ожидание 5 секунд
     if (WiFi.status() == WL_CONNECTED) { 
       Serial.println("Подключено к роутеру WiFi");
       Serial.print("IP-адрес: ");
@@ -228,19 +229,26 @@ void setup() {
 
   Serial.println("mDNS responder started");
   // Initialize mDNS
-  if (!MDNS.begin(dnsName)) { // Set the hostname to "esp32.local"
-    Serial.println("Error setting up MDNS responder!");
-    while (1) {
-      delay(1000);
-    }
-  }
+const int maxRetries = 5;
+int retryCount = 0;
+while (!MDNS.begin(dnsName) && retryCount < maxRetries) {
+  Serial.println("Error setting up MDNS responder! Retrying...");
+  delay(1000);
+  retryCount++;
+}
+
+if (retryCount == maxRetries) {
+  Serial.println("Failed to initialize MDNS after multiple attempts.");
+  // Обработка ошибки, возможно, безопасное завершение или перезагрузка
+}
 
   initWebSocket();
 
   // Если просто зашли на адрес контроллера, пушится всё что в SendHTML
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
-    request -> send(200, "text/html", SendHTML());
-  });
+  // server.on("/", HTTP_GET, [](AsyncWebServerRequest * request) {
+  //   request -> send(200, "text/html", SendHTML());
+  // });
+  server.on("/", HTTP_GET, SendHTMLStream);
 
   // Восстановление заводских настроек
   server.on("/factory-reset", HTTP_GET, [](AsyncWebServerRequest * request) {
@@ -272,7 +280,15 @@ void setup() {
   beeperFlag = sok[0]["beeper"].as <bool> ();
   sensorPressure = sok[0]["sensor"].as <int> ();
 
+    myTime.end = 0;
+    myTime.totalHour = 0;
+    myTime.leftMins = 0;
+    myTime.past.hours = 0;
+    myTime.past.mins = 0;
+    myTime.past.sec = 0;
 }
+
+
 
 void loop() {
 
@@ -281,13 +297,8 @@ void loop() {
 
   if (ADS.isBusy() == false)
   {
-    val_0 = ADS.getValue();
-    //  request a new one
     ADS.requestADC(0);
-    // Serial.print("\tAnalog0: ");
-    // Serial.println(val_0);
     sensor.pressure = constrain(ADS.getValue()/pressureDivivder,0,1000);
-
   }
 
   if (saveSetsFlag) {

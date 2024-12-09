@@ -7,6 +7,20 @@ public:
         chozenSeed = seed;
     }
 
+    int getCurrentStage(long currentTime) {
+        long accumulatedTime = 0;
+        size_t stagesCount = length();
+
+        for (int i = 0; i < stagesCount; i++) {
+            accumulatedTime += time(i) * 60; // Переводим минуты в секунды
+            if (currentTime < accumulatedTime) {
+                return i;
+            }
+        }
+        // Если время превышает все этапы, возвращаем последний этап
+        return stagesCount - 1;
+    }
+
     int maxPress(byte number) {
         return doc[chozenSeed]["stages"][number]["maxPress"].as<int>();
     }

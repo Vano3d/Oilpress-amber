@@ -106,9 +106,19 @@ void plotChart() {
 }
 
 void nameAndTime() {
+myTime.end = 0;
+    myTime.totalHour = 0;
+    myTime.leftMins = 0;
+
     myTime.end = mySeed.calcEndTime();
     myTime.totalHour = myTime.end / 3600;
     myTime.leftMins = (myTime.end - myTime.totalHour * 3600) / 60;  
+
+Serial.print("Name: ");
+Serial.println(mySeed.name());
+Serial.print("End Time: ");
+Serial.println(myTime.end);
+
   tft.fillScreen(TFT_BLACK);
   tft.loadFont(myFont28);
   tft.setCursor(5, 5);
