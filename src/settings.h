@@ -5,7 +5,7 @@
 #define PRESSURE70 37.7 // normal 38.1 
 #define PRESSURE80 33 // normal 33
 #define FORMAT_IF_FAILED 1
-#define DEBUG 0
+#define DEBUG 1
 #define I2C_SDA 4
 #define I2C_SCL 5
 
@@ -173,5 +173,5 @@ int thermoCLK = 18;
 
 MAX6675 thermocouple(thermoCLK, thermoCS, thermoDO);
 
-#include "PCF8574.h"
-PCF8574 pcf8574(0x22);
+// #include "PCF8574.h"
+// PCF8574 pcf8574(0x22);

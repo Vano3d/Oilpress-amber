@@ -78,10 +78,10 @@ void setup() {
   pinMode(STARTBUTTON, INPUT_PULLUP);
   pinMode(STOPBUTTON, INPUT_PULLUP);
 
-  pcf8574.pinMode(P0, INPUT_PULLUP);
-	pcf8574.pinMode(P1, OUTPUT);
-  pcf8574.pinMode(P2, INPUT);
-
+  // pcf8574.pinMode(P0, OUTPUT);
+	// pcf8574.pinMode(P1, OUTPUT);
+  // pcf8574.pinMode(P2, INPUT);
+  // pcf8574.digitalWrite(P0, 1);
   stopBtn.setBtnLevel(LOW);
   startBtn.setBtnLevel(LOW);
 
@@ -423,7 +423,6 @@ void loop() {
   if (pumpOnTmr.isReady() && wasStartedFlag && safetyTime != 0) {
       stopProcess();
       alarmScreen();
-      pcf8574.digitalWrite(P1, HIGH);
       stopLed.blink(100, 200, 600);
   }
 
@@ -515,5 +514,9 @@ void loop() {
     startProcess();
     webStartFlag = false;
   }
+
+  // if (sensor.temp > 23) {
+  //   pcf8574.digitalWrite(P0, 1);
+  // } else pcf8574.digitalWrite(P0, 0);
  
 }
