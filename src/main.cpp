@@ -78,6 +78,10 @@ void setup() {
   pinMode(STARTBUTTON, INPUT_PULLUP);
   pinMode(STOPBUTTON, INPUT_PULLUP);
 
+  pcf8574.pinMode(P0, INPUT_PULLUP);
+	pcf8574.pinMode(P1, OUTPUT);
+  pcf8574.pinMode(P2, INPUT);
+
   stopBtn.setBtnLevel(LOW);
   startBtn.setBtnLevel(LOW);
 
@@ -103,8 +107,6 @@ void setup() {
  } else {
     Serial.println("Failed to initialize ADS.");
   }
-
-
 
   delay(100);
 
@@ -148,10 +150,9 @@ void setup() {
 
   updParams();
 
-   wifiConnectScreen();
+  wifiConnectScreen();
 
   display.setBrightness(BRIGHT_7);
-  
 
   ElegantOTA.begin(&server); 
 
@@ -234,9 +235,6 @@ void setup() {
     handleWebStop(request);
   });
 
-  // server.on("/web-start", HTTP_GET, [](AsyncWebServerRequest *request)
-  //           { handleWebStart(request); });
-
   // safetyTime = sok[0]["protection"].as <int> ();
   // beeperFlag = sok[0]["beeper"].as <bool> ();
   // sensorPressure = sok[0]["sensor"].as <int> ();
@@ -259,6 +257,7 @@ void loop() {
     ADS.requestADC(0);
     sensor.pressure = constrain(ADS.getValue()/pressureDivider,0,1000);
   }
+  sensor.temp = thermocouple.readCelsius();
 
   ElegantOTA.loop();
 
@@ -316,7 +315,6 @@ void loop() {
   stopBtn.tick();
   stopLed.tick();
 
-
   /*
 Прокрутка культур или диапазонов
   */
@@ -331,7 +329,7 @@ void loop() {
   }
 
   // кнопка старта процесса
-  if (startBtn.click() && !wasStartedFlag) { // не сработает, если находимся на аварийном экране или экране окончания
+  if (startBtn.click() && !wasStartedFlag) { 
     switch (currentScreen) {
     case WIFIINFO: // если экран с WiFi, переходим на главный
       currentScreen = MAIN;
@@ -425,6 +423,7 @@ void loop() {
   if (pumpOnTmr.isReady() && wasStartedFlag && safetyTime != 0) {
       stopProcess();
       alarmScreen();
+      pcf8574.digitalWrite(P1, HIGH);
       stopLed.blink(100, 200, 600);
   }
 
@@ -494,14 +493,6 @@ void loop() {
     Serial.print("Программа: ");
     Serial.println(doc[chozenSeed]["name"].as<const char *>());
 
-    // Serial.print("Max-min press: ");
-    // Serial.print(sensor.maxPress);
-    // Serial.print("-");
-    // Serial.println(sensor.minPress);
-    // Serial.print("Max-min temp: ");
-    // Serial.print(maxTemp);
-    // Serial.print("-");
-    // Serial.println(minTemp);
     Serial.print("Array lenght");
     Serial.println(arrayLen);
     Serial.print("End time: ");
@@ -512,6 +503,10 @@ void loop() {
     Serial.println(sensor.minPress);
     Serial.print("Is filled: ");
     Serial.println(sensor.isFilled);
+    Serial.print("Temp: ");
+    Serial.println(sensor.temp);
+    Serial.print("ADS: ");
+    Serial.println(ADS.getValue());
 
   }
   ws.cleanupClients();
@@ -520,4 +515,5 @@ void loop() {
     startProcess();
     webStartFlag = false;
   }
+ 
 }

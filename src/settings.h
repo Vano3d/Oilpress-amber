@@ -5,7 +5,7 @@
 #define PRESSURE70 37.7 // normal 38.1 
 #define PRESSURE80 33 // normal 33
 #define FORMAT_IF_FAILED 1
-#define DEBUG 1
+#define DEBUG 0
 #define I2C_SDA 4
 #define I2C_SCL 5
 
@@ -15,6 +15,8 @@
 // координаты бочонка
 #define CORDX 100
 #define CORDY 240
+
+
 
 float pressureDivider;
 byte safetyTime, beeperFlag, sensorPressure;
@@ -163,10 +165,13 @@ int currentStage;
 
 
 
-// #include "max6675.h"
+#include "max6675.h"
 
-// int thermoDO = 34;
-// int thermoCS = 35;
-// int thermoCLK = 12;
+int thermoDO = 16;
+int thermoCS = 17;
+int thermoCLK = 18;
 
-// MAX6675 thermocouple(thermoCLK, thermoCS, thermoDO);
+MAX6675 thermocouple(thermoCLK, thermoCS, thermoDO);
+
+#include "PCF8574.h"
+PCF8574 pcf8574(0x22);

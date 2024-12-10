@@ -70,7 +70,7 @@ void stopProcess() {
   wasStartedFlag = 0;
   myTime.current = 0;
   continueTime = 0;
-  Serial.println("Отжим остановлен");
+  // Serial.println("Отжим остановлен");
   currentScreen = END;
 }
 
