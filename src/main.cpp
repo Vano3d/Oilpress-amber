@@ -73,13 +73,21 @@ void setup() {
   Wire.begin();
   Wire.setClock(100000);
   digitalWrite(BUZZER, HIGH);
-  pinMode(PUMP, OUTPUT); // маслопресс
-  pinMode(STOPLED, OUTPUT);
-  pinMode(STARTBUTTON, INPUT_PULLUP);
-  pinMode(STOPBUTTON, INPUT_PULLUP);
 
-  stopBtn.setBtnLevel(LOW);
-  startBtn.setBtnLevel(LOW);
+  // pinMode(PUMP, OUTPUT); 
+  pinMode(STOPLED, OUTPUT);
+  // pinMode(STARTBUTTON, INPUT_PULLUP);
+  // pinMode(STOPBUTTON, INPUT_PULLUP);
+  
+  pcf8574.begin();
+  pcf8574.pinMode(P0, OUTPUT); // маслопресс
+    pcf8574.pinMode(P1, OUTPUT); // тэн
+  // pcf8574.pinMode(P1, INPUT); // start
+  // pcf8574.pinMode(P2, INPUT); // stop
+
+
+  // stopBtn.setBtnLevel(LOW);
+  // startBtn.setBtnLevel(LOW);
 
   tft.init();
   tft.setRotation(0);
@@ -151,6 +159,7 @@ void setup() {
    wifiConnectScreen();
 
   display.setBrightness(BRIGHT_7);
+  display2.setBrightness(BRIGHT_7);
   
 
   ElegantOTA.begin(&server); 
@@ -289,7 +298,10 @@ void loop() {
 
 
 
-  if (timerIndicatorDelay.isReady()) display.showNumber(sensor.pressure);
+  if (timerIndicatorDelay.isReady()) {
+    display.showNumber(sensor.pressure);
+    display2.showNumber(sensor.temp);
+  } 
 
 
   // Коэффициены могут незначительно менять в зависимости от делителя
@@ -312,8 +324,8 @@ void loop() {
   }
 
   eb.tick();
-  startBtn.tick();
-  stopBtn.tick();
+  // startBtn.tick();
+  // stopBtn.tick();
   stopLed.tick();
 
 
@@ -331,43 +343,44 @@ void loop() {
   }
 
   // кнопка старта процесса
-  if (startBtn.click() && !wasStartedFlag) { // не сработает, если находимся на аварийном экране или экране окончания
-    switch (currentScreen) {
-    case WIFIINFO: // если экран с WiFi, переходим на главный
-      currentScreen = MAIN;
-      tftMainScreen();
-      break; 
-    case ALARM:
-    case END:
-      break;
-      // запускает процесс на других экранах
-    default:
-      stopLed.stop();
-      currentScreen = PROCESS;
-      startProcess();
-      break;
-    }
-  }
+  // if (startBtn.click() && !wasStartedFlag) { // не сработает, если находимся на аварийном экране или экране окончания
+
+  //   switch (currentScreen) {
+  //   case WIFIINFO: // если экран с WiFi, переходим на главный
+  //     currentScreen = MAIN;
+  //     tftMainScreen();
+  //     break; 
+  //   case ALARM:
+  //   case END:
+  //     break;
+  //     // запускает процесс на других экранах
+  //   default:
+  //     stopLed.stop();
+  //     currentScreen = PROCESS;
+  //     startProcess();
+  //     break;
+  //   }
+  // }
 
   // кнопка принудительного окончания процесса
-  if (stopBtn.click() && wasStartedFlag) {
-    stopProcess();
-    endScreen();
-  }
+  // if (stopBtn.click() && wasStartedFlag) {
+  //   stopProcess();
+  //   endScreen();
+  // }
 
   // если находимся на аварийном экране, то кнопка "стоп" переводит на главный экран
-  if (currentScreen == ALARM) {
-    if (stopBtn.click()) {
-      stopLed.stop();
-      tftMainScreen();
-      currentScreen = MAIN;
-    }
-  }
+  // if (currentScreen == ALARM) {
+  //   if (stopBtn.click()) {
+  //     stopLed.stop();
+  //     tftMainScreen();
+  //     currentScreen = MAIN;
+  //   }
+  // }
 
   // если после окончания процесса нажать кнопку "стоп", ТО прекатится мигание stopLed
-  if (stopBtn.press() && endFlag) {
-    stopLed.stop();
-  }
+  // if (stopBtn.press() && endFlag) {
+  //   stopLed.stop();
+  // }
 
   /* если нажать на кнопку "старт", то поднимается флаг wasStartedFlag, время начинает бежать
   с нуля, запускается цикл назначения диапазона давлений
@@ -385,10 +398,10 @@ void loop() {
     } 
   }
 
-  if (temp >= sensor.maxTemp && sensor.isWarmed) {
+  if (sensor.temp >= sensor.maxTemp && sensor.isWarmed) {
     heat_off();
     sensor.isWarmed = 0;
-  } else if (temp <= sensor.minTemp && sensor.isWarmed == 0 && wasStartedFlag) {
+  } else if (sensor.temp <= sensor.minTemp && sensor.isWarmed == 0 && wasStartedFlag) {
     heat_on();
     sensor.isWarmed = 1;
   }
@@ -449,13 +462,13 @@ void loop() {
   // }
 
 // Если нажать Стоп дважды, потом зажать на третий раз, сбросятся настройки WIFi по умолчанию 
-  if (stopBtn.step(2)) {
-    resetWiFi();
-    ESP.restart();
-  } 
+  // if (stopBtn.step(2)) {
+  //   resetWiFi();
+  //   ESP.restart();
+  // } 
 
 // вывод информации на экране процесса
-  if (currentScreen == 4) {
+  if (currentScreen == PROCESS) {
     if (processUpdTmr.isReady()) {
       screenBeginFlag = true;
       tft.fillRect(20,110,32,30,TFT_BLACK);
@@ -485,6 +498,8 @@ void loop() {
     }
   }
 
+if (tempTimer.isReady()) sensor.temp = thermocouple.readCelsius();
+
   // Вывод в Serial
   if (timerSerialDelay.isReady() && DEBUG == 1) {
 
@@ -512,6 +527,8 @@ void loop() {
     Serial.println(sensor.minPress);
     Serial.print("Is filled: ");
     Serial.println(sensor.isFilled);
+        Serial.print("temp: ");
+    Serial.println(sensor.temp);
 
   }
   ws.cleanupClients();
@@ -520,4 +537,12 @@ void loop() {
     startProcess();
     webStartFlag = false;
   }
+//  if (tempTimer.isReady()) {  // Проверяем температуру раз в секунду
+//         float temp = thermocouple.readCelsius();
+//         if (temp > 30) {
+//             pcf8574.digitalWrite(P0, 0);
+//         } else {
+//             pcf8574.digitalWrite(P0, 1);
+//         }
+//     }
 }

@@ -7,7 +7,8 @@ void fsDeserialise() {
 }
 
 void pump_on() {
-  digitalWrite(PUMP, 1);
+  // digitalWrite(PUMP, 1);
+  pcf8574.digitalWrite(P0, 0);
   // при каждом включении помпы запускаем таймер
   pumpOnTmr.setTimeout(safetyTime*1000);
   // barrelOn();
@@ -15,17 +16,20 @@ void pump_on() {
 
 void pump_off() {
   // если помпа благополучно выключается, таймер останавливается
-  digitalWrite(PUMP, 0);
+  // digitalWrite(PUMP, 0);
+  pcf8574.digitalWrite(P0, 1);
   pumpOnTmr.stop();
-  // barrelOff();
+
 }
 
 void heat_on() {
-  digitalWrite(HEAT, 1);
+  // digitalWrite(HEAT, 1);
+  pcf8574.digitalWrite(P1, 0);
 }
 
 void heat_off() {
-  digitalWrite(HEAT, 0);
+  // digitalWrite(HEAT, 0);
+  pcf8574.digitalWrite(P1, 1);
 }
 
 void buzzer() {
@@ -58,7 +62,6 @@ void startProcess() {
   Serial.print("Запущена культура № ");
   Serial.println(chozenSeed);
   processScreen();
-
 }
 
 void stopProcess() {
