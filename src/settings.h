@@ -5,7 +5,7 @@
 #define PRESSURE70 37.7 // normal 38.1 
 #define PRESSURE80 33 // normal 33
 #define FORMAT_IF_FAILED 1
-#define DEBUG 0
+#define DEBUG 1
 #define I2C_SDA 4
 #define I2C_SCL 5
 
@@ -25,8 +25,6 @@ byte safetyTime, beeperFlag, sensorPressure;
 
 const char* ssid = "maslobot1";  
 const char* password = "1234567890";
-
-// Disp1637Colon disp(DIO, CLK); -- глючит чё-то
 
 #include <TM1637TinyDisplay.h>
 TM1637TinyDisplay display(CLK, DIO);
@@ -48,9 +46,9 @@ uint32_t processScreenBegin;
 #define EB_CLICK_TIME 500   // таймаут ожидания кликов (кнопка)
 #define EB_HOLD_TIME 600    // таймаут удержания (кнопка)
 
-EncButton eb(S1, S2, KEY);
-// Button stopBtn(STOPBUTTON);
-// Button startBtn(STARTBUTTON);
+
+Button stopBtn(STOPBUTTON);
+Button startBtn(STARTBUTTON);
 
 Blinker stopLed(STOPLED);
 
@@ -170,7 +168,12 @@ int thermoCLK = 18;
 
 MAX6675 thermocouple(thermoCLK, thermoCS, thermoDO);
 
-#include "PCF8574.h"
-PCF8574 pcf8574(0x22);
-
 GTimer tempTimer(MS, 500);
+
+
+// EncButton eb(pinA, pinB, buttonPin);
+
+
+#include <Adafruit_MCP23X17.h>
+Adafruit_MCP23X17 mcp;
+

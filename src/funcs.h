@@ -8,28 +8,31 @@ void fsDeserialise() {
 
 void pump_on() {
   // digitalWrite(PUMP, 1);
-  pcf8574.digitalWrite(P0, 0);
+  mcp.digitalWrite(PUMP_LED, HIGH);
   // при каждом включении помпы запускаем таймер
   pumpOnTmr.setTimeout(safetyTime*1000);
   // barrelOn();
 }
 
 void pump_off() {
-  // если помпа благополучно выключается, таймер останавливается
-  // digitalWrite(PUMP, 0);
-  pcf8574.digitalWrite(P0, 1);
+  mcp.digitalWrite(PUMP_LED, LOW);
   pumpOnTmr.stop();
 
 }
 
 void heat_on() {
-  // digitalWrite(HEAT, 1);
-  pcf8574.digitalWrite(P1, 0);
+  mcp.digitalWrite(HEAT_LED, HIGH);
 }
 
 void heat_off() {
-  // digitalWrite(HEAT, 0);
-  pcf8574.digitalWrite(P1, 1);
+  mcp.digitalWrite(HEAT_LED, LOW);
+}
+
+void pumpZero_on() {
+  mcp.digitalWrite(PUMP_ZERO, HIGH);
+}
+void pumpZero_off() {
+  mcp.digitalWrite(PUMP_ZERO, LOW);
 }
 
 void buzzer() {
@@ -55,7 +58,7 @@ void startProcess() {
   endFlag = 0;
   myTime.beforeStart = millis() / 1000ul;
   wasStartedFlag = 1;
-  sensor.isFilled = 0;
+
   stopLed.stop();
   currentScreen = PROCESS;
   if (beeperFlag) tone(BUZZER, 1500, 150);
@@ -67,6 +70,8 @@ void startProcess() {
 void stopProcess() {
   pump_off();
   heat_off();
+  sensor.isFilled = 0;
+  sensor.isWarmed = 0;
   buzzFlag = 1;
   endTimer.setTimeout(100);
   endFlag = 1;

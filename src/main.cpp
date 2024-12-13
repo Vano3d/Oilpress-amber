@@ -76,25 +76,34 @@ void setup() {
 
   // pinMode(PUMP, OUTPUT); 
   pinMode(STOPLED, OUTPUT);
-  // pinMode(STARTBUTTON, INPUT_PULLUP);
-  // pinMode(STOPBUTTON, INPUT_PULLUP);
-  
-  pcf8574.begin();
-  pcf8574.pinMode(P0, OUTPUT); // маслопресс
-    pcf8574.pinMode(P1, OUTPUT); // тэн
-  // pcf8574.pinMode(P1, INPUT); // start
-  // pcf8574.pinMode(P2, INPUT); // stop
+  pinMode(STARTBUTTON, INPUT_PULLUP);
+  pinMode(STOPBUTTON, INPUT_PULLUP);
+
+  if (!mcp.begin_I2C()) {
+    Serial.println("Error mcp start!");
+    while (1);
+  }
+
+  mcp.pinMode(PUMP_LED, OUTPUT);
+  mcp.pinMode(HEAT_LED, OUTPUT);
+  mcp.pinMode(PUMP_ZERO, OUTPUT);
+
+  mcp.digitalWrite(PUMP_LED, LOW);
+  mcp.digitalWrite(HEAT_LED, LOW);
+  mcp.digitalWrite(PUMP_ZERO, LOW);
+
+    // pcf8574.pinMode(P5, OUTPUT); // сброс давления
 
 
-  // stopBtn.setBtnLevel(LOW);
-  // startBtn.setBtnLevel(LOW);
+  stopBtn.setBtnLevel(LOW);
+  startBtn.setBtnLevel(LOW);
 
   tft.init();
   tft.setRotation(0);
   tft.fillScreen(TFT_BLACK);
 
-  eb.setEncReverse(0);
-  eb.counter = 0; // сбросить счётчик энкодера
+  // eb.setEncReverse(0);
+  // eb.counter = 0; // сбросить счётчик энкодера
 
   timerSerialDelay.setInterval(500);
   timerIndicatorDelay.setInterval(200);
@@ -296,8 +305,6 @@ void loop() {
 
   // server.handleClient();
 
-
-
   if (timerIndicatorDelay.isReady()) {
     display.showNumber(sensor.pressure);
     display2.showNumber(sensor.temp);
@@ -323,64 +330,65 @@ void loop() {
     break;
   }
 
-  eb.tick();
-  // startBtn.tick();
-  // stopBtn.tick();
+  // eb.tick();
+  startBtn.tick();
+  stopBtn.tick();
   stopLed.tick();
 
 
   /*
 Прокрутка культур или диапазонов
   */
-  if (eb.left() && !wasStartedFlag) encRotate(true);
+  // if (eb.left() && !wasStartedFlag) encRotate(true);
 
-  if (eb.right()) encRotate(false);
+  // if (eb.right()) encRotate(false);
 
   // Переходы с главного экрана к диапазонам по клику энкодера
 
-  if (eb.click() && !wasStartedFlag) {
-    encClick();
-  }
+  // if (eb.click() && !wasStartedFlag) {
+  //   encClick();
+  // }
 
   // кнопка старта процесса
-  // if (startBtn.click() && !wasStartedFlag) { // не сработает, если находимся на аварийном экране или экране окончания
+  if (startBtn.click() && !wasStartedFlag) { // не сработает, если находимся на аварийном экране или экране окончания
 
-  //   switch (currentScreen) {
-  //   case WIFIINFO: // если экран с WiFi, переходим на главный
-  //     currentScreen = MAIN;
-  //     tftMainScreen();
-  //     break; 
-  //   case ALARM:
-  //   case END:
-  //     break;
-  //     // запускает процесс на других экранах
-  //   default:
-  //     stopLed.stop();
-  //     currentScreen = PROCESS;
-  //     startProcess();
-  //     break;
-  //   }
-  // }
+    switch (currentScreen) {
+    case WIFIINFO: // если экран с WiFi, переходим на главный
+      currentScreen = MAIN;
+      tftMainScreen();
+      break; 
+    case ALARM:
+    case END:
+      break;
+      // запускает процесс на других экранах
+    default:
+      stopLed.stop();
+      currentScreen = PROCESS;
+      startProcess();
+      break;
+    }
+  }
+  
 
   // кнопка принудительного окончания процесса
-  // if (stopBtn.click() && wasStartedFlag) {
-  //   stopProcess();
-  //   endScreen();
-  // }
+  if (stopBtn.click() && wasStartedFlag) {
+    stopProcess();
+    endScreen();
+  }
 
   // если находимся на аварийном экране, то кнопка "стоп" переводит на главный экран
-  // if (currentScreen == ALARM) {
-  //   if (stopBtn.click()) {
-  //     stopLed.stop();
-  //     tftMainScreen();
-  //     currentScreen = MAIN;
-  //   }
-  // }
+  if (currentScreen == ALARM) {
+    if (stopBtn.click()) {
+      stopLed.stop();
+      tftMainScreen();
+      currentScreen = MAIN;
+    }
+  }
 
   // если после окончания процесса нажать кнопку "стоп", ТО прекатится мигание stopLed
-  // if (stopBtn.press() && endFlag) {
-  //   stopLed.stop();
-  // }
+  if (stopBtn.press() && endFlag) {
+    stopLed.stop();
+  }
 
   /* если нажать на кнопку "старт", то поднимается флаг wasStartedFlag, время начинает бежать
   с нуля, запускается цикл назначения диапазона давлений
@@ -391,17 +399,22 @@ void loop() {
   if (sensor.pressure >= sensor.maxPress && sensor.isFilled) {
     pump_off();
     sensor.isFilled = 0;
-  } else if (sensor.pressure <= sensor.minPress && sensor.isFilled == 0 && wasStartedFlag) {
+  } else if (sensor.pressure <= sensor.minPress && !sensor.isFilled && wasStartedFlag) {
     if(sensor.minPress!=0) {
       pump_on();
       sensor.isFilled = 1;
-    } 
+  }
+  if (sensor.maxPress == 0 && sensor.minPress == 0 && wasStartedFlag) {
+      pump_off();
+      pumpZero_on();
+    }
+
   }
 
   if (sensor.temp >= sensor.maxTemp && sensor.isWarmed) {
     heat_off();
     sensor.isWarmed = 0;
-  } else if (sensor.temp <= sensor.minTemp && sensor.isWarmed == 0 && wasStartedFlag) {
+  } else if (sensor.temp <= sensor.minTemp && !sensor.isWarmed && wasStartedFlag) {
     heat_on();
     sensor.isWarmed = 1;
   }
@@ -527,8 +540,11 @@ if (tempTimer.isReady()) sensor.temp = thermocouple.readCelsius();
     Serial.println(sensor.minPress);
     Serial.print("Is filled: ");
     Serial.println(sensor.isFilled);
+    Serial.print("Is warmed: ");
+    Serial.println(sensor.isWarmed);
         Serial.print("temp: ");
     Serial.println(sensor.temp);
+
 
   }
   ws.cleanupClients();
