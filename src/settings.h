@@ -50,7 +50,7 @@ uint32_t processScreenBegin;
 Button stopBtn(STOPBUTTON);
 Button startBtn(STARTBUTTON);
 
-Blinker stopLed(STOPLED);
+// Blinker stopLed(STOPLED);
 
 // Adafruit_ADS1115 ads;
 ADS1115 ADS(0x48);
@@ -174,6 +174,9 @@ GTimer tempTimer(MS, 500);
 // EncButton eb(pinA, pinB, buttonPin);
 
 
-#include <Adafruit_MCP23X17.h>
-Adafruit_MCP23X17 mcp;
+
+
+GTimer pumpSwitchTmr(MS);  // таймер для задержки переключения помп
+
+MCPBlinker blinker(BLINK_LED);
 

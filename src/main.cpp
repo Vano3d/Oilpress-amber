@@ -23,6 +23,9 @@
 // #include "freertos/task.h"
 #include <string.h>
 
+#include <Adafruit_MCP23X17.h>
+Adafruit_MCP23X17 mcp;
+
 #include "PT-Sans24.h"
 #include "PT-Sans28.h"
 
@@ -75,7 +78,7 @@ void setup() {
   digitalWrite(BUZZER, HIGH);
 
   // pinMode(PUMP, OUTPUT); 
-  pinMode(STOPLED, OUTPUT);
+  // pinMode(STOPLED, OUTPUT);
   pinMode(STARTBUTTON, INPUT_PULLUP);
   pinMode(STOPBUTTON, INPUT_PULLUP);
 
@@ -87,10 +90,12 @@ void setup() {
   mcp.pinMode(PUMP_LED, OUTPUT);
   mcp.pinMode(HEAT_LED, OUTPUT);
   mcp.pinMode(PUMP_ZERO, OUTPUT);
+  mcp.pinMode(BLINK_LED, OUTPUT); 
 
   mcp.digitalWrite(PUMP_LED, LOW);
   mcp.digitalWrite(HEAT_LED, LOW);
   mcp.digitalWrite(PUMP_ZERO, LOW);
+  mcp.digitalWrite(BLINK_LED, LOW);
 
     // pcf8574.pinMode(P5, OUTPUT); // сброс давления
 
@@ -333,7 +338,8 @@ void loop() {
   // eb.tick();
   startBtn.tick();
   stopBtn.tick();
-  stopLed.tick();
+  // stopLed.tick();
+  blinker.tick();
 
 
   /*
@@ -362,7 +368,8 @@ void loop() {
       break;
       // запускает процесс на других экранах
     default:
-      stopLed.stop();
+      // stopLed.stop();
+      blinker.stopBlink();
       currentScreen = PROCESS;
       startProcess();
       break;
@@ -379,7 +386,8 @@ void loop() {
   // если находимся на аварийном экране, то кнопка "стоп" переводит на главный экран
   if (currentScreen == ALARM) {
     if (stopBtn.click()) {
-      stopLed.stop();
+      // stopLed.stop();
+      blinker.stopBlink();
       tftMainScreen();
       currentScreen = MAIN;
     }
@@ -387,7 +395,8 @@ void loop() {
 
   // если после окончания процесса нажать кнопку "стоп", ТО прекатится мигание stopLed
   if (stopBtn.press() && endFlag) {
-    stopLed.stop();
+    // stopLed.stop();
+    blinker.stopBlink();
   }
 
   /* если нажать на кнопку "старт", то поднимается флаг wasStartedFlag, время начинает бежать
@@ -396,20 +405,44 @@ void loop() {
   if (wasStartedFlag) myTime.current = millis() / 1000ul - myTime.beforeStart + continueTime;
 
   // главный алгоритм, поддерживающий давление в диапазоне minPress-maxPress
-  if (sensor.pressure >= sensor.maxPress && sensor.isFilled) {
-    pump_off();
-    sensor.isFilled = 0;
-  } else if (sensor.pressure <= sensor.minPress && !sensor.isFilled && wasStartedFlag) {
-    if(sensor.minPress!=0) {
-      pump_on();
-      sensor.isFilled = 1;
-  }
-  if (sensor.maxPress == 0 && sensor.minPress == 0 && wasStartedFlag) {
-      pump_off();
-      pumpZero_on();
+if (sensor.maxPress == 0 && sensor.minPress == 0 && wasStartedFlag) {
+    // Если оба значения давления равны нулю
+    pump_off();  // Выключаем основную помпу
+    
+    if (!pumpSwitchTmr.isEnabled()) {
+        pumpSwitchTmr.setTimeout(1000);  // Устанавливаем задержку 1 с
     }
-
-  }
+    
+    if (pumpSwitchTmr.isReady()) {  // Ждем истечения таймера
+        if (sensor.pressure > 2) {
+            mcp.digitalWrite(PUMP_ZERO, HIGH);  // Включаем вторую помпу
+        } else {
+            mcp.digitalWrite(PUMP_ZERO, LOW);   // Выключаем вторую помпу
+        }
+    }
+} else {
+    // Стандартная логика контроля давления
+    if (sensor.pressure >= sensor.maxPress && sensor.isFilled) {
+        pump_off();
+        sensor.isFilled = 0;
+    } else if (sensor.pressure <= sensor.minPress && !sensor.isFilled && wasStartedFlag) {
+        if(sensor.minPress != 0) {
+            pump_on();
+            sensor.isFilled = 1;
+        }
+    }
+    mcp.digitalWrite(PUMP_ZERO, LOW);  // Убеждаемся что вторая помпа выключена
+    pumpSwitchTmr.stop();  // Останавливаем таймер
+}
+  // if (sensor.pressure >= sensor.maxPress && sensor.isFilled) {
+  //   pump_off();
+  //   sensor.isFilled = 0;
+  // } else if (sensor.pressure <= sensor.minPress && !sensor.isFilled && wasStartedFlag) {
+  //   if(sensor.minPress!=0) {
+  //     pump_on();
+  //     sensor.isFilled = 1;
+  //   }
+  // }
 
   if (sensor.temp >= sensor.maxTemp && sensor.isWarmed) {
     heat_off();
@@ -437,7 +470,8 @@ void loop() {
   // отрубаем пресс по времени окончания
   if (myTime.current >= myTime.end && wasStartedFlag) {
     stopProcess();
-    stopLed.blink(100, 200, 600);
+    // stopLed.blink(100, 200, 600);
+    blinkHundredTimes(); 
     endScreen();
   }
 
@@ -451,7 +485,8 @@ void loop() {
   if (pumpOnTmr.isReady() && wasStartedFlag && safetyTime != 0) {
       stopProcess();
       alarmScreen();
-      stopLed.blink(100, 200, 600);
+      // stopLed.blink(100, 200, 600);
+      blinkHundredTimes(); 
   }
 
 

@@ -59,7 +59,8 @@ void startProcess() {
   myTime.beforeStart = millis() / 1000ul;
   wasStartedFlag = 1;
 
-  stopLed.stop();
+  // stopLed.stop();
+  blinker.stopBlink();
   currentScreen = PROCESS;
   if (beeperFlag) tone(BUZZER, 1500, 150);
   Serial.print("Запущена культура № ");
@@ -213,4 +214,8 @@ void encClick() {
     default:
       break;
     }
+}
+
+void blinkHundredTimes() {
+    blinker.blink(100, 200, 600);  // 100 раз, 200мс вкл, 200мс выкл
 }

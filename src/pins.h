@@ -1,5 +1,5 @@
 // #define PUMP 4
-#define STOPLED 2
+// #define STOPLED 2
 #define STARTBUTTON 32 //32
 #define STOPBUTTON 33 // 33
 // #define S1 16
@@ -18,4 +18,5 @@
 #define PUMP_LED 0
 #define HEAT_LED 1
 #define PUMP_ZERO 2
+#define BLINK_LED 3
 
