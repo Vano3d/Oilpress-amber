@@ -1,7 +1,7 @@
 // #define PUMP 4
 // #define STOPLED 2
-#define STARTBUTTON 32 //32
-#define STOPBUTTON 33 // 33
+// #define STARTBUTTON 32 //32
+// #define STOPBUTTON 33 // 33
 // #define S1 16
 // #define S2 17
 // #define KEY 18
@@ -20,3 +20,6 @@
 #define PUMP_ZERO 2
 #define BLINK_LED 3
 
+// Define port expander pins for Start and Stop buttons
+#define START_BUTTON_PIN 4
+#define STOP_BUTTON_PIN 5

@@ -47,8 +47,12 @@ uint32_t processScreenBegin;
 #define EB_HOLD_TIME 600    // таймаут удержания (кнопка)
 
 
-Button stopBtn(STOPBUTTON);
-Button startBtn(STARTBUTTON);
+// Button stopBtn(STOPBUTTON);
+// Button startBtn(STARTBUTTON);
+// Assignments via port expander pins
+
+EncButton startBtn(START_BUTTON_PIN, INPUT_PULLUP, LOW);
+EncButton stopBtn(STOP_BUTTON_PIN, INPUT_PULLUP, LOW);
 
 // Blinker stopLed(STOPLED);
 
@@ -180,3 +184,4 @@ GTimer pumpSwitchTmr(MS);  // таймер для задержки перекл�
 
 MCPBlinker blinker(BLINK_LED);
 
+// EncButtonT<ENCA_PIN, ENCB_PIN, BTN_PIN> encoder(INPUT, INPUT_PULLUP, LOW);

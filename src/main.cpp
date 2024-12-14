@@ -1,7 +1,7 @@
 // Программа для отжима масла
 // v 3.1
 #include <Arduino.h>
-#include <GyverIO.h>
+// #include <GyverIO.h>
 #include <Wire.h>
 #include <LittleFS.h>
 #include "ADS1X15.h"
@@ -10,7 +10,6 @@
 #include "GyverTimer.h" 
 #include <Blinker.h>
 #include <ArduinoJson.h>
-// #include <GyverSegment.h>
 #include "Update.h"
 #include <ElegantOTA.h>
 #include <DNSServer.h>
@@ -25,6 +24,9 @@
 
 #include <Adafruit_MCP23X17.h>
 Adafruit_MCP23X17 mcp;
+
+// Определите пины энкодера и кнопки на расширителе портов
+
 
 #include "PT-Sans24.h"
 #include "PT-Sans28.h"
@@ -79,8 +81,8 @@ void setup() {
 
   // pinMode(PUMP, OUTPUT); 
   // pinMode(STOPLED, OUTPUT);
-  pinMode(STARTBUTTON, INPUT_PULLUP);
-  pinMode(STOPBUTTON, INPUT_PULLUP);
+  // pinMode(STARTBUTTON, INPUT_PULLUP);
+  // pinMode(STOPBUTTON, INPUT_PULLUP);
 
   if (!mcp.begin_I2C()) {
     Serial.println("Error mcp start!");
@@ -91,6 +93,11 @@ void setup() {
   mcp.pinMode(HEAT_LED, OUTPUT);
   mcp.pinMode(PUMP_ZERO, OUTPUT);
   mcp.pinMode(BLINK_LED, OUTPUT); 
+
+    mcp.pinMode(START_BUTTON_PIN, INPUT_PULLUP);
+    mcp.pinMode(STOP_BUTTON_PIN, INPUT_PULLUP);
+    startBtn = EncButton(START_BUTTON_PIN, INPUT_PULLUP, LOW);
+    stopBtn = EncButton(STOP_BUTTON_PIN, INPUT_PULLUP, LOW);
 
   mcp.digitalWrite(PUMP_LED, LOW);
   mcp.digitalWrite(HEAT_LED, LOW);
@@ -274,6 +281,9 @@ void setup() {
 
 void loop() {
 
+  // encoder.tick();
+  mcp.readGPIOAB();
+  
   mySeed.updateSeed(chozenSeed);// обновляем класс MySeed регулярно
   currentStage = mySeed.getCurrentStage(myTime.current);
 
@@ -355,6 +365,7 @@ void loop() {
   //   encClick();
   // }
 
+
   // кнопка старта процесса
   if (startBtn.click() && !wasStartedFlag) { // не сработает, если находимся на аварийном экране или экране окончания
 
@@ -408,6 +419,7 @@ void loop() {
 if (sensor.maxPress == 0 && sensor.minPress == 0 && wasStartedFlag) {
     // Если оба значения давления равны нулю
     pump_off();  // Выключаем основную помпу
+    sensor.isFilled = 0;
     
     if (!pumpSwitchTmr.isEnabled()) {
         pumpSwitchTmr.setTimeout(1000);  // Устанавливаем задержку 1 с
@@ -434,6 +446,7 @@ if (sensor.maxPress == 0 && sensor.minPress == 0 && wasStartedFlag) {
     mcp.digitalWrite(PUMP_ZERO, LOW);  // Убеждаемся что вторая помпа выключена
     pumpSwitchTmr.stop();  // Останавливаем таймер
 }
+mcp.readGPIOAB();
   // if (sensor.pressure >= sensor.maxPress && sensor.isFilled) {
   //   pump_off();
   //   sensor.isFilled = 0;
