@@ -19,6 +19,7 @@
 #include "ESPAsyncWebServer.h"
 #include <TFT_eSPI.h>
 extern TFT_eSPI tft; 
+extern TFT_eSprite mySprite;
 extern TFT_eSprite pressureSprite;
 extern TFT_eSprite tempSprite;
 extern TFT_eSprite timeSprite;
@@ -105,24 +106,11 @@ void setup() {
   tft.setRotation(0);
   tft.fillScreen(TFT_BLACK);
 
-  if (!pressureSprite.createSprite(200, 35)) {
-        Serial.println("Ошибка создания pressureSprite");
-    }
-    pressureSprite.setTextColor(TFT_ORANGE, TFT_BLACK); // Установка цветов текста и фона
-    pressureSprite.loadFont(myFont28);
-
-    // Инициализация спрайта для температуры
-    if (!tempSprite.createSprite(200, 35)) {
-        Serial.println("Ошибка создания tempSprite");
-    }
-    tempSprite.setTextColor(TFT_ORANGE, TFT_BLACK);
-    tempSprite.loadFont(myFont28);
-
-  if (!timeSprite.createSprite(200, 40)) {
+  if (!mySprite.createSprite(200, 40)) {
     Serial.println("Ошибка создания timeSprite");
     }
-    timeSprite.setTextColor(TFT_ORANGE, TFT_BLACK); // Установка цветов текста и фона
-    timeSprite.loadFont(myFont28);
+    mySprite.setTextColor(TFT_ORANGE, TFT_BLACK); // Установка цветов текста и фона
+    mySprite.loadFont(myFont28);
 
   enc.setEncReverse(0);
   enc.counter = 0; // сбросить счётчик энкодера

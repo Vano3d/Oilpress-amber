@@ -378,20 +378,20 @@ void wifiScreenAP() {
 
 void updateDisplays() {
     // Обновление времени
-    timeSprite.fillSprite(TFT_BLACK); // Очистка спрайта
-    timeSprite.setCursor(0, 0);
-    timeSprite.print(String(myTime.leftHour) + " ч " + String(myTime.leftMins) + " м " + String(myTime.leftSec)+ " с");
-    timeSprite.pushSprite(40, 113); // Позиция на дисплее
+    mySprite.fillSprite(TFT_BLACK); // Очистка спрайта
+    mySprite.setCursor(0, 0);
+    mySprite.print(String(myTime.leftHour) + " ч " + String(myTime.leftMins) + " м " + String(myTime.leftSec)+ " с");
+    mySprite.pushSprite(40, 113); // Позиция на дисплее
 
     // Обновление давления
-    pressureSprite.fillSprite(TFT_BLACK); // Очистка спрайта
-    pressureSprite.setCursor(0, 0);
-    pressureSprite.print(String(sensor.maxPress) + " - " + String(sensor.minPress));
-    pressureSprite.pushSprite(40, 185); // Позиция на дисплее
+    mySprite.fillSprite(TFT_BLACK); // Очистка спрайта
+    mySprite.setCursor(0, 0);
+    mySprite.print(String(sensor.maxPress) + " - " + String(sensor.minPress));
+    mySprite.pushSprite(40, 185); // Позиция на дисплее
 
     // Обновление температуры
-    tempSprite.fillSprite(TFT_BLACK); // Очистка спрайта
-    tempSprite.setCursor(0, 0);
-    tempSprite.print(String(sensor.maxTemp) + " - " + String(sensor.minTemp));
-    tempSprite.pushSprite(40, 265); // Позиция на дисплее
+    mySprite.fillSprite(TFT_BLACK); // Очистка спрайта
+    mySprite.setCursor(0, 0);
+    mySprite.print(String(sensor.maxTemp) + " - " + String(sensor.minTemp));
+    mySprite.pushSprite(40, 265); // Позиция на дисплее
 }

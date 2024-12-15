@@ -57,10 +57,7 @@ ADS1115 ADS(0x48);
 
 TFT_eSPI tft = TFT_eSPI();
 
-TFT_eSprite pressureSprite = TFT_eSprite(&tft);
-TFT_eSprite tempSprite = TFT_eSprite(&tft);
-TFT_eSprite timeSprite = TFT_eSprite(&tft);
-
+TFT_eSprite mySprite = TFT_eSprite(&tft);
 
 bool endFlag = 0; // флаг окончания всего процесса
 bool wasStartedFlag = 0; // начинался ли процесс
