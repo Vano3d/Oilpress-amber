@@ -1,12 +1,13 @@
 // Программа для отжима масла
 // v 3.1
 #include <Arduino.h>
-// #include <GyverIO.h>
+#include <GyverIO.h>
 #include <Wire.h>
 #include <LittleFS.h>
 #include "ADS1X15.h"
 #include <SPI.h>
 #include <EncButton.h>
+
 #include "GyverTimer.h" 
 #include <Blinker.h>
 #include <ArduinoJson.h>
@@ -79,11 +80,6 @@ void setup() {
   Wire.setClock(100000);
   digitalWrite(BUZZER, HIGH);
 
-  // pinMode(PUMP, OUTPUT); 
-  // pinMode(STOPLED, OUTPUT);
-  // pinMode(STARTBUTTON, INPUT_PULLUP);
-  // pinMode(STOPBUTTON, INPUT_PULLUP);
-
   if (!mcp.begin_I2C()) {
     Serial.println("Error mcp start!");
     while (1);
@@ -94,25 +90,28 @@ void setup() {
   mcp.pinMode(PUMP_ZERO, OUTPUT);
   mcp.pinMode(BLINK_LED, OUTPUT); 
 
-    mcp.pinMode(START_BUTTON_PIN, INPUT_PULLUP);
-    mcp.pinMode(STOP_BUTTON_PIN, INPUT_PULLUP);
-    startBtn = EncButton(START_BUTTON_PIN, INPUT_PULLUP, LOW);
-    stopBtn = EncButton(STOP_BUTTON_PIN, INPUT_PULLUP, LOW);
+  mcp.pinMode(START_BUTTON, INPUT_PULLUP);
+  mcp.pinMode(STOP_BUTTON, INPUT_PULLUP);
+  
 
   mcp.digitalWrite(PUMP_LED, LOW);
   mcp.digitalWrite(HEAT_LED, LOW);
   mcp.digitalWrite(PUMP_ZERO, LOW);
   mcp.digitalWrite(BLINK_LED, LOW);
 
-    // pcf8574.pinMode(P5, OUTPUT); // сброс давления
 
 
-  stopBtn.setBtnLevel(LOW);
-  startBtn.setBtnLevel(LOW);
+  // stopBtn.setBtnLevel(LOW);
+  // startBtn.setBtnLevel(LOW);
 
   tft.init();
   tft.setRotation(0);
   tft.fillScreen(TFT_BLACK);
+
+  // enc.setTickMode(AUTO);
+  // attachInterrupt(0, isrCLK, CHANGE);    // прерывание на 2 пине! CLK у энка
+  // attachInterrupt(1, isrDT, CHANGE);    // прерывание на 3 пине! DT у энка
+
 
   // eb.setEncReverse(0);
   // eb.counter = 0; // сбросить счётчик энкодера
@@ -120,7 +119,7 @@ void setup() {
   timerSerialDelay.setInterval(500);
   timerIndicatorDelay.setInterval(200);
   processUpdTmr.setInterval(1000);
-
+  btnStatusCheck.setInterval(50);
 
 
   // Подключение внешнего АЦП
@@ -281,8 +280,23 @@ void setup() {
 
 void loop() {
 
-  // encoder.tick();
-  mcp.readGPIOAB();
+  // if (enc.isRight()) Serial.println("Right"); 
+  // if (enc.isLeft()) Serial.println("Left");
+  // if (enc.isPress()) Serial.println("Press");
+
+  checkButtons();
+  enc.tick();
+  // Обработка нажатия кнопки "Старт"
+  if (startButtonPressed) {
+    startButtonPressed = false; // Сбрасываем флаг после обработки
+    onStartButtonPressed();
+  }
+
+  // Обработка нажатия кнопки "Стоп"
+  if (stopButtonPressed) {
+    stopButtonPressed = false; // Сбрасываем флаг после обработки
+    onStopButtonPressed();
+  }
   
   mySeed.updateSeed(chozenSeed);// обновляем класс MySeed регулярно
   currentStage = mySeed.getCurrentStage(myTime.current);
@@ -345,70 +359,52 @@ void loop() {
     break;
   }
 
-  // eb.tick();
-  startBtn.tick();
-  stopBtn.tick();
-  // stopLed.tick();
   blinker.tick();
 
 
   /*
 Прокрутка культур или диапазонов
   */
-  // if (eb.left() && !wasStartedFlag) encRotate(true);
+  // if (enc.isLeft() && !wasStartedFlag) {
+    if (enc.left() && !wasStartedFlag) {
+    encRotate(true);
+    Serial.println("Left");
+    Serial.print("Программа: ");
+    Serial.println(doc[chozenSeed]["name"].as<const char *>());
+  } 
 
-  // if (eb.right()) encRotate(false);
+  // if (enc.isRight()) {
+    if (enc.right()) {
+    encRotate(false);
+    Serial.println("Right");
+    Serial.print("Программа: ");
+    Serial.println(doc[chozenSeed]["name"].as<const char *>());
+  } 
 
-  // Переходы с главного экрана к диапазонам по клику энкодера
+  //Переходы с главного экрана к диапазонам по клику энкодера
 
-  // if (eb.click() && !wasStartedFlag) {
-  //   encClick();
-  // }
-
-
-  // кнопка старта процесса
-  if (startBtn.click() && !wasStartedFlag) { // не сработает, если находимся на аварийном экране или экране окончания
-
-    switch (currentScreen) {
-    case WIFIINFO: // если экран с WiFi, переходим на главный
-      currentScreen = MAIN;
-      tftMainScreen();
-      break; 
-    case ALARM:
-    case END:
-      break;
-      // запускает процесс на других экранах
-    default:
-      // stopLed.stop();
-      blinker.stopBlink();
-      currentScreen = PROCESS;
-      startProcess();
-      break;
-    }
+  // if (enc.isPress() && !wasStartedFlag) {
+  if (enc.click() && !wasStartedFlag) {
+    encClick();
   }
-  
 
-  // кнопка принудительного окончания процесса
-  if (stopBtn.click() && wasStartedFlag) {
-    stopProcess();
-    endScreen();
-  }
+
 
   // если находимся на аварийном экране, то кнопка "стоп" переводит на главный экран
-  if (currentScreen == ALARM) {
-    if (stopBtn.click()) {
-      // stopLed.stop();
-      blinker.stopBlink();
-      tftMainScreen();
-      currentScreen = MAIN;
-    }
-  }
+  // if (currentScreen == ALARM) {
+  //   if (stopBtn.click()) {
+  //     // stopLed.stop();
+  //     blinker.stopBlink();
+  //     tftMainScreen();
+  //     currentScreen = MAIN;
+  //   }
+  // }
 
   // если после окончания процесса нажать кнопку "стоп", ТО прекатится мигание stopLed
-  if (stopBtn.press() && endFlag) {
-    // stopLed.stop();
-    blinker.stopBlink();
-  }
+  // if (stopBtn.press() && endFlag) {
+  //   // stopLed.stop();
+  //   blinker.stopBlink();
+  // }
 
   /* если нажать на кнопку "старт", то поднимается флаг wasStartedFlag, время начинает бежать
   с нуля, запускается цикл назначения диапазона давлений
@@ -446,7 +442,6 @@ if (sensor.maxPress == 0 && sensor.minPress == 0 && wasStartedFlag) {
     mcp.digitalWrite(PUMP_ZERO, LOW);  // Убеждаемся что вторая помпа выключена
     pumpSwitchTmr.stop();  // Останавливаем таймер
 }
-mcp.readGPIOAB();
   // if (sensor.pressure >= sensor.maxPress && sensor.isFilled) {
   //   pump_off();
   //   sensor.isFilled = 0;
@@ -570,28 +565,31 @@ if (tempTimer.isReady()) sensor.temp = thermocouple.readCelsius();
     Serial.print("Программа: ");
     Serial.println(doc[chozenSeed]["name"].as<const char *>());
 
-    // Serial.print("Max-min press: ");
-    // Serial.print(sensor.maxPress);
-    // Serial.print("-");
-    // Serial.println(sensor.minPress);
-    // Serial.print("Max-min temp: ");
-    // Serial.print(maxTemp);
-    // Serial.print("-");
-    // Serial.println(minTemp);
-    Serial.print("Array lenght");
-    Serial.println(arrayLen);
-    Serial.print("End time: ");
-    Serial.println(myTime.end);
-    Serial.print("Press diaps: ");
+    Serial.print("Max-min press: ");
     Serial.print(sensor.maxPress);
     Serial.print("-");
     Serial.println(sensor.minPress);
-    Serial.print("Is filled: ");
-    Serial.println(sensor.isFilled);
-    Serial.print("Is warmed: ");
-    Serial.println(sensor.isWarmed);
-        Serial.print("temp: ");
-    Serial.println(sensor.temp);
+    Serial.print("Max-min temp: ");
+    Serial.print(sensor.maxTemp);
+    Serial.print("-");
+    Serial.println(sensor.minTemp);
+    Serial.print("Array lenght");
+    Serial.println(arrayLen);
+    Serial.print("Current screen");
+    Serial.println(currentScreen);
+    // Serial.print("End time: ");
+    // Serial.println(myTime.end);
+    // Serial.print("Press diaps: ");
+    // Serial.print(sensor.maxPress);
+    // Serial.print("-");
+    // Serial.println(sensor.minPress);
+    // Serial.print("Is filled: ");
+    // Serial.println(sensor.isFilled);
+    // Serial.print("Is warmed: ");
+    // Serial.println(sensor.isWarmed);
+    Serial.print("Wasstarted flag: ");
+    Serial.println(wasStartedFlag);
+
 
 
   }

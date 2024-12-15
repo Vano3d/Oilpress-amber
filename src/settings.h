@@ -5,7 +5,7 @@
 #define PRESSURE70 37.7 // normal 38.1 
 #define PRESSURE80 33 // normal 33
 #define FORMAT_IF_FAILED 1
-#define DEBUG 1
+#define DEBUG 0
 #define I2C_SDA 4
 #define I2C_SCL 5
 
@@ -40,19 +40,18 @@ GTimer buzzTimer1(MS);
 GTimer buzzTimer2(MS);
 GTimer pumpOnTmr(MS);
 GTimer processUpdTmr(MS);
+GTimer btnStatusCheck(MS);
+
 uint32_t processScreenBegin;
 
 #define EB_DEB_TIME 50      // таймаут гашения дребезга кнопки (кнопка)
 #define EB_CLICK_TIME 500   // таймаут ожидания кликов (кнопка)
 #define EB_HOLD_TIME 600    // таймаут удержания (кнопка)
 
+// #include "GyverEncoder.h"
+// Encoder enc(S2, S1, KEY, TYPE1);
 
-// Button stopBtn(STOPBUTTON);
-// Button startBtn(STARTBUTTON);
-// Assignments via port expander pins
-
-EncButton startBtn(START_BUTTON_PIN, INPUT_PULLUP, LOW);
-EncButton stopBtn(STOP_BUTTON_PIN, INPUT_PULLUP, LOW);
+EncButton enc(S1, S2, KEY);
 
 // Blinker stopLed(STOPLED);
 
@@ -162,26 +161,19 @@ int tableIndex, rowIndex;
 
 int currentStage;
 
-
-
 #include "max6675.h"
 
-int thermoDO = 16;
-int thermoCS = 17;
-int thermoCLK = 18;
+byte thermoDO = 16;
+byte thermoCS = 17;
+byte thermoCLK = 18;
 
 MAX6675 thermocouple(thermoCLK, thermoCS, thermoDO);
 
 GTimer tempTimer(MS, 500);
 
 
-// EncButton eb(pinA, pinB, buttonPin);
-
-
-
-
 GTimer pumpSwitchTmr(MS);  // таймер для задержки переключения помп
 
 MCPBlinker blinker(BLINK_LED);
 
-// EncButtonT<ENCA_PIN, ENCB_PIN, BTN_PIN> encoder(INPUT, INPUT_PULLUP, LOW);
+
