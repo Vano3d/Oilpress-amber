@@ -358,7 +358,6 @@ void loop() {
   /*
 Прокрутка культур или диапазонов
   */
-  // if (enc.isLeft() && !wasStartedFlag) {
     if (enc.left() && !wasStartedFlag) {
     encRotate(true);
     Serial.println("Left");
@@ -366,7 +365,6 @@ void loop() {
     Serial.println(doc[chozenSeed]["name"].as<const char *>());
   } 
 
-  // if (enc.isRight()) {
     if (enc.right()) {
     encRotate(false);
     Serial.println("Right");
