@@ -273,6 +273,7 @@ void setup() {
     myTime.past.hours = 0;
     myTime.past.mins = 0;
     myTime.past.sec = 0;
+    myTime.maintainStart = 0;
 }
 
 void loop() {
