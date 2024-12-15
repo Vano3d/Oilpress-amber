@@ -69,6 +69,7 @@ struct pastTime {
 struct allTheTime {
   long current, end, beforeStart;
   unsigned long totalHour, totalMins, left, leftHour, leftMins, leftSec, continueTime;
+  unsigned long maintainStart;
   bool continueFlag;
   pastTime past;
 };
