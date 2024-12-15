@@ -533,20 +533,7 @@ if (sensor.maxPress == 0 && sensor.minPress == 0 && wasStartedFlag) {
   if (currentScreen == PROCESS) {
     if (processUpdTmr.isReady()) {
       screenBeginFlag = true;
-      // tft.fillRect(20,110,32,30,TFT_BLACK);
-      // tft.setCursor(myTime.leftHour > 9 ? 21 : 38, 113);
-      // tft.print(myTime.leftHour);
-
-      // tft.fillRect(84, 110, 35, 35, TFT_RED);
-      // tft.setCursor(myTime.leftMins > 9 ? 84 : 99, 113);
-      // tft.print(myTime.leftMins);
-
-      // tft.fillRect(150, 110, 35, 35, TFT_GREEN);
-      // tft.setCursor(myTime.leftSec > 9 ? 150 : 165, 113);
-      // tft.print(myTime.leftSec);
-
       updateDisplays();
-
     }
   }
 
