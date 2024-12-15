@@ -290,11 +290,3 @@ void checkButtons() {
     }
   }
 }
-
-
-void isrCLK() {
-  enc.tick();  // отработка в прерывании
-}
-void isrDT() {
-  enc.tick();  // отработка в прерывании
-}

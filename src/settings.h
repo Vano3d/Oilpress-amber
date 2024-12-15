@@ -48,9 +48,6 @@ uint32_t processScreenBegin;
 #define EB_CLICK_TIME 500   // таймаут ожидания кликов (кнопка)
 #define EB_HOLD_TIME 600    // таймаут удержания (кнопка)
 
-// #include "GyverEncoder.h"
-// Encoder enc(S2, S1, KEY, TYPE1);
-
 EncButton enc(S1, S2, KEY);
 
 // Blinker stopLed(STOPLED);
@@ -170,7 +167,6 @@ byte thermoCLK = 18;
 MAX6675 thermocouple(thermoCLK, thermoCS, thermoDO);
 
 GTimer tempTimer(MS, 500);
-
 
 GTimer pumpSwitchTmr(MS);  // таймер для задержки переключения помп
 

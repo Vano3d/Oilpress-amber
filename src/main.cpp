@@ -26,9 +26,6 @@
 #include <Adafruit_MCP23X17.h>
 Adafruit_MCP23X17 mcp;
 
-// Определите пины энкодера и кнопки на расширителе портов
-
-
 #include "PT-Sans24.h"
 #include "PT-Sans28.h"
 
@@ -100,21 +97,12 @@ void setup() {
   mcp.digitalWrite(BLINK_LED, LOW);
 
 
-
-  // stopBtn.setBtnLevel(LOW);
-  // startBtn.setBtnLevel(LOW);
-
   tft.init();
   tft.setRotation(0);
   tft.fillScreen(TFT_BLACK);
 
-  // enc.setTickMode(AUTO);
-  // attachInterrupt(0, isrCLK, CHANGE);    // прерывание на 2 пине! CLK у энка
-  // attachInterrupt(1, isrDT, CHANGE);    // прерывание на 3 пине! DT у энка
-
-
-  // eb.setEncReverse(0);
-  // eb.counter = 0; // сбросить счётчик энкодера
+  enc.setEncReverse(0);
+  enc.counter = 0; // сбросить счётчик энкодера
 
   timerSerialDelay.setInterval(500);
   timerIndicatorDelay.setInterval(200);
@@ -280,10 +268,6 @@ void setup() {
 
 void loop() {
 
-  // if (enc.isRight()) Serial.println("Right"); 
-  // if (enc.isLeft()) Serial.println("Left");
-  // if (enc.isPress()) Serial.println("Press");
-
   checkButtons();
   enc.tick();
   // Обработка нажатия кнопки "Старт"
@@ -442,6 +426,7 @@ if (sensor.maxPress == 0 && sensor.minPress == 0 && wasStartedFlag) {
     mcp.digitalWrite(PUMP_ZERO, LOW);  // Убеждаемся что вторая помпа выключена
     pumpSwitchTmr.stop();  // Останавливаем таймер
 }
+  // старый алгоритм
   // if (sensor.pressure >= sensor.maxPress && sensor.isFilled) {
   //   pump_off();
   //   sensor.isFilled = 0;
