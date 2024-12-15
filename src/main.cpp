@@ -18,6 +18,10 @@
 #include <AsyncTCP.h>
 #include "ESPAsyncWebServer.h"
 #include <TFT_eSPI.h>
+extern TFT_eSPI tft; 
+extern TFT_eSprite pressureSprite;
+extern TFT_eSprite tempSprite;
+extern TFT_eSprite timeSprite;
 #include <ESPmDNS.h>
 // #include "freertos/FreeRTOS.h"
 // #include "freertos/task.h"
@@ -101,6 +105,25 @@ void setup() {
   tft.setRotation(0);
   tft.fillScreen(TFT_BLACK);
 
+  if (!pressureSprite.createSprite(200, 35)) {
+        Serial.println("Ошибка создания pressureSprite");
+    }
+    pressureSprite.setTextColor(TFT_ORANGE, TFT_BLACK); // Установка цветов текста и фона
+    pressureSprite.loadFont(myFont28);
+
+    // Инициализация спрайта для температуры
+    if (!tempSprite.createSprite(200, 35)) {
+        Serial.println("Ошибка создания tempSprite");
+    }
+    tempSprite.setTextColor(TFT_ORANGE, TFT_BLACK);
+    tempSprite.loadFont(myFont28);
+
+  if (!timeSprite.createSprite(200, 40)) {
+    Serial.println("Ошибка создания timeSprite");
+    }
+    timeSprite.setTextColor(TFT_ORANGE, TFT_BLACK); // Установка цветов текста и фона
+    timeSprite.loadFont(myFont28);
+
   enc.setEncReverse(0);
   enc.counter = 0; // сбросить счётчик энкодера
 
@@ -119,8 +142,6 @@ void setup() {
  } else {
     Serial.println("Failed to initialize ADS.");
   }
-
-
 
   delay(100);
 
@@ -512,29 +533,19 @@ if (sensor.maxPress == 0 && sensor.minPress == 0 && wasStartedFlag) {
   if (currentScreen == PROCESS) {
     if (processUpdTmr.isReady()) {
       screenBeginFlag = true;
-      tft.fillRect(20,110,32,30,TFT_BLACK);
-      tft.setCursor(myTime.leftHour > 9 ? 21 : 38, 113);
-      tft.print(myTime.leftHour);
+      // tft.fillRect(20,110,32,30,TFT_BLACK);
+      // tft.setCursor(myTime.leftHour > 9 ? 21 : 38, 113);
+      // tft.print(myTime.leftHour);
 
-      tft.fillRect(84, 110, 35, 35, TFT_BLACK);
-      tft.setCursor(myTime.leftMins > 9 ? 84 : 99, 113);
-      tft.print(myTime.leftMins);
+      // tft.fillRect(84, 110, 35, 35, TFT_RED);
+      // tft.setCursor(myTime.leftMins > 9 ? 84 : 99, 113);
+      // tft.print(myTime.leftMins);
 
-      tft.fillRect(150, 110, 35, 35, TFT_BLACK);
-      tft.setCursor(myTime.leftSec > 9 ? 150 : 165, 113);
-      tft.print(myTime.leftSec);
+      // tft.fillRect(150, 110, 35, 35, TFT_GREEN);
+      // tft.setCursor(myTime.leftSec > 9 ? 150 : 165, 113);
+      // tft.print(myTime.leftSec);
 
-      // tft.fillRect(20,182,180,35,TFT_BLACK);
-      tft.setTextColor(TFT_ORANGE, TFT_BLACK);
-      tft.setCursor(40, 185);
-      tft.print(sensor.maxPress);
-      tft.print(" - ");
-      tft.print(sensor.minPress);
-
-      tft.setCursor(40, 265);
-      tft.print(sensor.maxTemp);
-      tft.print(" - ");
-      tft.print(sensor.minTemp);
+      updateDisplays();
 
     }
   }
@@ -558,22 +569,6 @@ if (tempTimer.isReady()) sensor.temp = thermocouple.readCelsius();
     Serial.print(sensor.maxTemp);
     Serial.print("-");
     Serial.println(sensor.minTemp);
-    Serial.print("Array lenght");
-    Serial.println(arrayLen);
-    Serial.print("Current screen");
-    Serial.println(currentScreen);
-    // Serial.print("End time: ");
-    // Serial.println(myTime.end);
-    // Serial.print("Press diaps: ");
-    // Serial.print(sensor.maxPress);
-    // Serial.print("-");
-    // Serial.println(sensor.minPress);
-    // Serial.print("Is filled: ");
-    // Serial.println(sensor.isFilled);
-    // Serial.print("Is warmed: ");
-    // Serial.println(sensor.isWarmed);
-    Serial.print("Wasstarted flag: ");
-    Serial.println(wasStartedFlag);
 
 
 

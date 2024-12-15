@@ -5,7 +5,7 @@
 #define PRESSURE70 37.7 // normal 38.1 
 #define PRESSURE80 33 // normal 33
 #define FORMAT_IF_FAILED 1
-#define DEBUG 0
+#define DEBUG 1
 #define I2C_SDA 4
 #define I2C_SCL 5
 
@@ -56,6 +56,10 @@ EncButton enc(S1, S2, KEY);
 ADS1115 ADS(0x48);
 
 TFT_eSPI tft = TFT_eSPI();
+
+TFT_eSprite pressureSprite = TFT_eSprite(&tft);
+TFT_eSprite tempSprite = TFT_eSprite(&tft);
+TFT_eSprite timeSprite = TFT_eSprite(&tft);
 
 
 bool endFlag = 0; // флаг окончания всего процесса
