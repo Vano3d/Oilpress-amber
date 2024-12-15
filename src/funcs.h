@@ -7,25 +7,32 @@ void fsDeserialise() {
 }
 
 void pump_on() {
-  digitalWrite(PUMP, 1);
+  // digitalWrite(PUMP, 1);
+  mcp.digitalWrite(PUMP_LED, HIGH);
   // при каждом включении помпы запускаем таймер
   pumpOnTmr.setTimeout(safetyTime*1000);
   // barrelOn();
 }
 
 void pump_off() {
-  // если помпа благополучно выключается, таймер останавливается
-  digitalWrite(PUMP, 0);
+  mcp.digitalWrite(PUMP_LED, LOW);
   pumpOnTmr.stop();
-  // barrelOff();
+
 }
 
 void heat_on() {
-  digitalWrite(HEAT, 1);
+  mcp.digitalWrite(HEAT_LED, HIGH);
 }
 
 void heat_off() {
-  digitalWrite(HEAT, 0);
+  mcp.digitalWrite(HEAT_LED, LOW);
+}
+
+void pumpZero_on() {
+  mcp.digitalWrite(PUMP_ZERO, HIGH);
+}
+void pumpZero_off() {
+  mcp.digitalWrite(PUMP_ZERO, LOW);
 }
 
 void buzzer() {
@@ -51,26 +58,28 @@ void startProcess() {
   endFlag = 0;
   myTime.beforeStart = millis() / 1000ul;
   wasStartedFlag = 1;
-  sensor.isFilled = 0;
-  stopLed.stop();
+
+  // stopLed.stop();
+  blinker.stopBlink();
   currentScreen = PROCESS;
+
   if (beeperFlag) tone(BUZZER, 1500, 150);
   Serial.print("Запущена культура № ");
   Serial.println(chozenSeed);
   processScreen();
-
 }
 
 void stopProcess() {
   pump_off();
   heat_off();
+  sensor.isFilled = 0;
+  sensor.isWarmed = 0;
   buzzFlag = 1;
   endTimer.setTimeout(100);
   endFlag = 1;
   wasStartedFlag = 0;
   myTime.current = 0;
-  continueTime = 0;
-  // Serial.println("Отжим остановлен");
+  Serial.println("Отжим остановлен");
   currentScreen = END;
 }
 
@@ -205,4 +214,79 @@ void encClick() {
     default:
       break;
     }
+}
+
+void blinkHundredTimes() {
+    blinker.blink(100, 200, 600);  // 100 раз, 200мс вкл, 200мс выкл
+}
+
+const unsigned long DEBOUNCE_TIME = 50; // Время дебаунса в миллисекундах
+
+// Переменные для хранения состояния кнопок и времени последнего изменения
+bool startButtonPressed = false;
+bool stopButtonPressed = false;
+
+unsigned long lastStartButtonTime = 0;
+unsigned long lastStopButtonTime = 0;
+
+
+// Функция обработки нажатия кнопки Старт
+void onStartButtonPressed() {
+  Serial.println("Кнопка 'Старт' нажата");
+  switch (currentScreen) {
+  case WIFIINFO: // если экран с WiFi, переходим на главный
+    currentScreen = MAIN;
+    tftMainScreen();
+    break; 
+  case ALARM:
+  case END:
+    break;
+    // запускает процесс на других экранах
+  default:
+    // stopLed.stop(); // предположительно остановка светодиода
+    blinker.stopBlink(); // останавливаем мигание
+    currentScreen = PROCESS; // меняем экран на PROCESS
+    startProcess(); // запускаем процесс
+    break;
+  }
+}
+
+// Функция обработки нажатия кнопки Стоп
+void onStopButtonPressed() {
+  Serial.println("Кнопка 'Стоп' нажата");
+  stopProcess();
+  endScreen();
+}
+
+void checkButtons() {
+  static bool lastStartButtonState = HIGH;
+  static bool lastStopButtonState = HIGH;
+
+  // Проверка кнопки "Старт"
+  bool currentStartButtonState = mcp.digitalRead(START_BUTTON);
+  if (currentStartButtonState != lastStartButtonState) {
+    unsigned long currentTime = millis();
+    if ((currentTime - lastStartButtonTime) > DEBOUNCE_TIME) {
+      lastStartButtonTime = currentTime;
+      lastStartButtonState = currentStartButtonState;
+      if (currentStartButtonState == LOW) { // Кнопка нажата
+        startButtonPressed = true;
+        Serial.println("Кнопка 'Старт' нажата");
+      }
+    }
+  }
+
+  // Проверка кнопки "Стоп"
+  bool currentStopButtonState = mcp.digitalRead(STOP_BUTTON);
+  if (currentStopButtonState != lastStopButtonState) {
+    unsigned long currentTime = millis();
+    if ((currentTime - lastStopButtonTime) > DEBOUNCE_TIME) {
+      lastStopButtonTime = currentTime;
+      lastStopButtonState = currentStopButtonState;
+      if (currentStopButtonState == LOW) { // Кнопка нажата
+        stopButtonPressed = true;
+        Serial.println("Кнопка 'Стоп' нажата");
+      }
+    }
+  }
 }

@@ -7,10 +7,10 @@
 #include "ADS1X15.h"
 #include <SPI.h>
 #include <EncButton.h>
+
 #include "GyverTimer.h" 
 #include <Blinker.h>
 #include <ArduinoJson.h>
-// #include <GyverSegment.h>
 #include "Update.h"
 #include <ElegantOTA.h>
 #include <DNSServer.h>
@@ -18,10 +18,18 @@
 #include <AsyncTCP.h>
 #include "ESPAsyncWebServer.h"
 #include <TFT_eSPI.h>
+extern TFT_eSPI tft; 
+extern TFT_eSprite mySprite;
+extern TFT_eSprite pressureSprite;
+extern TFT_eSprite tempSprite;
+extern TFT_eSprite timeSprite;
 #include <ESPmDNS.h>
 // #include "freertos/FreeRTOS.h"
 // #include "freertos/task.h"
 #include <string.h>
+
+#include <Adafruit_MCP23X17.h>
+Adafruit_MCP23X17 mcp;
 
 #include "PT-Sans24.h"
 #include "PT-Sans28.h"
@@ -73,29 +81,44 @@ void setup() {
   Wire.begin();
   Wire.setClock(100000);
   digitalWrite(BUZZER, HIGH);
-  pinMode(PUMP, OUTPUT); // маслопресс
-  pinMode(STOPLED, OUTPUT);
-  pinMode(STARTBUTTON, INPUT_PULLUP);
-  pinMode(STOPBUTTON, INPUT_PULLUP);
 
-  // pcf8574.pinMode(P0, OUTPUT);
-	// pcf8574.pinMode(P1, OUTPUT);
-  // pcf8574.pinMode(P2, INPUT);
-  // pcf8574.digitalWrite(P0, 1);
-  stopBtn.setBtnLevel(LOW);
-  startBtn.setBtnLevel(LOW);
+  if (!mcp.begin_I2C()) {
+    Serial.println("Error mcp start!");
+    while (1);
+  }
+
+  mcp.pinMode(PUMP_LED, OUTPUT);
+  mcp.pinMode(HEAT_LED, OUTPUT);
+  mcp.pinMode(PUMP_ZERO, OUTPUT);
+  mcp.pinMode(BLINK_LED, OUTPUT); 
+
+  mcp.pinMode(START_BUTTON, INPUT_PULLUP);
+  mcp.pinMode(STOP_BUTTON, INPUT_PULLUP);
+  
+
+  mcp.digitalWrite(PUMP_LED, LOW);
+  mcp.digitalWrite(HEAT_LED, LOW);
+  mcp.digitalWrite(PUMP_ZERO, LOW);
+  mcp.digitalWrite(BLINK_LED, LOW);
+
 
   tft.init();
   tft.setRotation(0);
   tft.fillScreen(TFT_BLACK);
 
-  eb.setEncReverse(0);
-  eb.counter = 0; // сбросить счётчик энкодера
+  if (!mySprite.createSprite(200, 40)) {
+    Serial.println("Ошибка создания timeSprite");
+    }
+    mySprite.setTextColor(TFT_ORANGE, TFT_BLACK); // Установка цветов текста и фона
+    mySprite.loadFont(myFont28);
+
+  enc.setEncReverse(0);
+  enc.counter = 0; // сбросить счётчик энкодера
 
   timerSerialDelay.setInterval(500);
   timerIndicatorDelay.setInterval(200);
-  processUpdTmr.setInterval(1000);
-
+  processUpdTmr.setInterval(200);
+  btnStatusCheck.setInterval(50);
 
 
   // Подключение внешнего АЦП
@@ -150,9 +173,11 @@ void setup() {
 
   updParams();
 
-  wifiConnectScreen();
+   wifiConnectScreen();
 
   display.setBrightness(BRIGHT_7);
+  display2.setBrightness(BRIGHT_7);
+  
 
   ElegantOTA.begin(&server); 
 
@@ -235,6 +260,9 @@ void setup() {
     handleWebStop(request);
   });
 
+  // server.on("/web-start", HTTP_GET, [](AsyncWebServerRequest *request)
+  //           { handleWebStart(request); });
+
   // safetyTime = sok[0]["protection"].as <int> ();
   // beeperFlag = sok[0]["beeper"].as <bool> ();
   // sensorPressure = sok[0]["sensor"].as <int> ();
@@ -249,6 +277,20 @@ void setup() {
 
 void loop() {
 
+  checkButtons();
+  enc.tick();
+  // Обработка нажатия кнопки "Старт"
+  if (startButtonPressed) {
+    startButtonPressed = false; // Сбрасываем флаг после обработки
+    onStartButtonPressed();
+  }
+
+  // Обработка нажатия кнопки "Стоп"
+  if (stopButtonPressed) {
+    stopButtonPressed = false; // Сбрасываем флаг после обработки
+    onStopButtonPressed();
+  }
+  
   mySeed.updateSeed(chozenSeed);// обновляем класс MySeed регулярно
   currentStage = mySeed.getCurrentStage(myTime.current);
 
@@ -257,7 +299,6 @@ void loop() {
     ADS.requestADC(0);
     sensor.pressure = constrain(ADS.getValue()/pressureDivider,0,1000);
   }
-  sensor.temp = thermocouple.readCelsius();
 
   ElegantOTA.loop();
 
@@ -286,9 +327,10 @@ void loop() {
 
   // server.handleClient();
 
-
-
-  if (timerIndicatorDelay.isReady()) display.showNumber(sensor.pressure);
+  if (timerIndicatorDelay.isReady()) {
+    display.showNumber(sensor.pressure);
+    display2.showNumber(sensor.temp);
+  } 
 
 
   // Коэффициены могут незначительно менять в зависимости от делителя
@@ -310,62 +352,50 @@ void loop() {
     break;
   }
 
-  eb.tick();
-  startBtn.tick();
-  stopBtn.tick();
-  stopLed.tick();
+  blinker.tick();
+
 
   /*
 Прокрутка культур или диапазонов
   */
-  if (eb.left() && !wasStartedFlag) encRotate(true);
+    if (enc.left() && !wasStartedFlag) {
+    encRotate(true);
+    Serial.println("Left");
+    Serial.print("Программа: ");
+    Serial.println(doc[chozenSeed]["name"].as<const char *>());
+  } 
 
-  if (eb.right()) encRotate(false);
+    if (enc.right()) {
+    encRotate(false);
+    Serial.println("Right");
+    Serial.print("Программа: ");
+    Serial.println(doc[chozenSeed]["name"].as<const char *>());
+  } 
 
-  // Переходы с главного экрана к диапазонам по клику энкодера
+  //Переходы с главного экрана к диапазонам по клику энкодера
 
-  if (eb.click() && !wasStartedFlag) {
+  // if (enc.isPress() && !wasStartedFlag) {
+  if (enc.click() && !wasStartedFlag) {
     encClick();
   }
 
-  // кнопка старта процесса
-  if (startBtn.click() && !wasStartedFlag) { 
-    switch (currentScreen) {
-    case WIFIINFO: // если экран с WiFi, переходим на главный
-      currentScreen = MAIN;
-      tftMainScreen();
-      break; 
-    case ALARM:
-    case END:
-      break;
-      // запускает процесс на других экранах
-    default:
-      stopLed.stop();
-      currentScreen = PROCESS;
-      startProcess();
-      break;
-    }
-  }
 
-  // кнопка принудительного окончания процесса
-  if (stopBtn.click() && wasStartedFlag) {
-    stopProcess();
-    endScreen();
-  }
 
   // если находимся на аварийном экране, то кнопка "стоп" переводит на главный экран
-  if (currentScreen == ALARM) {
-    if (stopBtn.click()) {
-      stopLed.stop();
-      tftMainScreen();
-      currentScreen = MAIN;
-    }
-  }
+  // if (currentScreen == ALARM) {
+  //   if (stopBtn.click()) {
+  //     // stopLed.stop();
+  //     blinker.stopBlink();
+  //     tftMainScreen();
+  //     currentScreen = MAIN;
+  //   }
+  // }
 
   // если после окончания процесса нажать кнопку "стоп", ТО прекатится мигание stopLed
-  if (stopBtn.press() && endFlag) {
-    stopLed.stop();
-  }
+  // if (stopBtn.press() && endFlag) {
+  //   // stopLed.stop();
+  //   blinker.stopBlink();
+  // }
 
   /* если нажать на кнопку "старт", то поднимается флаг wasStartedFlag, время начинает бежать
   с нуля, запускается цикл назначения диапазона давлений
@@ -373,20 +403,51 @@ void loop() {
   if (wasStartedFlag) myTime.current = millis() / 1000ul - myTime.beforeStart + continueTime;
 
   // главный алгоритм, поддерживающий давление в диапазоне minPress-maxPress
-  if (sensor.pressure >= sensor.maxPress && sensor.isFilled) {
-    pump_off();
+if (sensor.maxPress == 0 && sensor.minPress == 0 && wasStartedFlag) {
+    // Если оба значения давления равны нулю
+    pump_off();  // Выключаем основную помпу
     sensor.isFilled = 0;
-  } else if (sensor.pressure <= sensor.minPress && sensor.isFilled == 0 && wasStartedFlag) {
-    if(sensor.minPress!=0) {
-      pump_on();
-      sensor.isFilled = 1;
-    } 
-  }
+    
+    if (!pumpSwitchTmr.isEnabled()) {
+        pumpSwitchTmr.setTimeout(1000);  // Устанавливаем задержку 1 с
+    }
+    
+    if (pumpSwitchTmr.isReady()) {  // Ждем истечения таймера
+        if (sensor.pressure > 2) {
+            mcp.digitalWrite(PUMP_ZERO, HIGH);  // Включаем вторую помпу
+        } else {
+            mcp.digitalWrite(PUMP_ZERO, LOW);   // Выключаем вторую помпу
+        }
+    }
+} else {
+    // Стандартная логика контроля давления
+    if (sensor.pressure >= sensor.maxPress && sensor.isFilled) {
+        pump_off();
+        sensor.isFilled = 0;
+    } else if (sensor.pressure <= sensor.minPress && !sensor.isFilled && wasStartedFlag) {
+        if(sensor.minPress != 0) {
+            pump_on();
+            sensor.isFilled = 1;
+        }
+    }
+    mcp.digitalWrite(PUMP_ZERO, LOW);  // Убеждаемся что вторая помпа выключена
+    pumpSwitchTmr.stop();  // Останавливаем таймер
+}
+  // старый алгоритм
+  // if (sensor.pressure >= sensor.maxPress && sensor.isFilled) {
+  //   pump_off();
+  //   sensor.isFilled = 0;
+  // } else if (sensor.pressure <= sensor.minPress && !sensor.isFilled && wasStartedFlag) {
+  //   if(sensor.minPress!=0) {
+  //     pump_on();
+  //     sensor.isFilled = 1;
+  //   }
+  // }
 
-  if (temp >= sensor.maxTemp && sensor.isWarmed) {
+  if (sensor.temp >= sensor.maxTemp && sensor.isWarmed) {
     heat_off();
     sensor.isWarmed = 0;
-  } else if (temp <= sensor.minTemp && sensor.isWarmed == 0 && wasStartedFlag) {
+  } else if (sensor.temp <= sensor.minTemp && !sensor.isWarmed && wasStartedFlag) {
     heat_on();
     sensor.isWarmed = 1;
   }
@@ -409,7 +470,8 @@ void loop() {
   // отрубаем пресс по времени окончания
   if (myTime.current >= myTime.end && wasStartedFlag) {
     stopProcess();
-    stopLed.blink(100, 200, 600);
+    // stopLed.blink(100, 200, 600);
+    blinkHundredTimes(); 
     endScreen();
   }
 
@@ -423,7 +485,8 @@ void loop() {
   if (pumpOnTmr.isReady() && wasStartedFlag && safetyTime != 0) {
       stopProcess();
       alarmScreen();
-      stopLed.blink(100, 200, 600);
+      // stopLed.blink(100, 200, 600);
+      blinkHundredTimes(); 
   }
 
 
@@ -447,41 +510,20 @@ void loop() {
   // }
 
 // Если нажать Стоп дважды, потом зажать на третий раз, сбросятся настройки WIFi по умолчанию 
-  if (stopBtn.step(2)) {
-    resetWiFi();
-    ESP.restart();
-  } 
+  // if (stopBtn.step(2)) {
+  //   resetWiFi();
+  //   ESP.restart();
+  // } 
 
 // вывод информации на экране процесса
-  if (currentScreen == 4) {
+  if (currentScreen == PROCESS) {
     if (processUpdTmr.isReady()) {
       screenBeginFlag = true;
-      tft.fillRect(20,110,32,30,TFT_BLACK);
-      tft.setCursor(myTime.leftHour > 9 ? 21 : 38, 113);
-      tft.print(myTime.leftHour);
-
-      tft.fillRect(84, 110, 35, 35, TFT_BLACK);
-      tft.setCursor(myTime.leftMins > 9 ? 84 : 99, 113);
-      tft.print(myTime.leftMins);
-
-      tft.fillRect(150, 110, 35, 35, TFT_BLACK);
-      tft.setCursor(myTime.leftSec > 9 ? 150 : 165, 113);
-      tft.print(myTime.leftSec);
-
-      // tft.fillRect(20,182,180,35,TFT_BLACK);
-      tft.setTextColor(TFT_ORANGE, TFT_BLACK);
-      tft.setCursor(40, 185);
-      tft.print(sensor.maxPress);
-      tft.print(" - ");
-      tft.print(sensor.minPress);
-
-      tft.setCursor(40, 265);
-      tft.print(sensor.maxTemp);
-      tft.print(" - ");
-      tft.print(sensor.minTemp);
-
+      updateDisplays();
     }
   }
+
+if (tempTimer.isReady()) sensor.temp = thermocouple.readCelsius();
 
   // Вывод в Serial
   if (timerSerialDelay.isReady() && DEBUG == 1) {
@@ -492,20 +534,16 @@ void loop() {
     Serial.print("Программа: ");
     Serial.println(doc[chozenSeed]["name"].as<const char *>());
 
-    Serial.print("Array lenght");
-    Serial.println(arrayLen);
-    Serial.print("End time: ");
-    Serial.println(myTime.end);
-    Serial.print("Press diaps: ");
+    Serial.print("Max-min press: ");
     Serial.print(sensor.maxPress);
     Serial.print("-");
     Serial.println(sensor.minPress);
-    Serial.print("Is filled: ");
-    Serial.println(sensor.isFilled);
-    Serial.print("Temp: ");
-    Serial.println(sensor.temp);
-    Serial.print("ADS: ");
-    Serial.println(ADS.getValue());
+    Serial.print("Max-min temp: ");
+    Serial.print(sensor.maxTemp);
+    Serial.print("-");
+    Serial.println(sensor.minTemp);
+
+
 
   }
   ws.cleanupClients();
@@ -514,9 +552,12 @@ void loop() {
     startProcess();
     webStartFlag = false;
   }
-
-  // if (sensor.temp > 23) {
-  //   pcf8574.digitalWrite(P0, 1);
-  // } else pcf8574.digitalWrite(P0, 0);
- 
+//  if (tempTimer.isReady()) {  // Проверяем температуру раз в секунду
+//         float temp = thermocouple.readCelsius();
+//         if (temp > 30) {
+//             pcf8574.digitalWrite(P0, 0);
+//         } else {
+//             pcf8574.digitalWrite(P0, 1);
+//         }
+//     }
 }

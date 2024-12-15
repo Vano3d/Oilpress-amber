@@ -1,19 +1,17 @@
-// #define SENSOR 36
-#define PUMP 4
-#define STOPLED 27
-// #define STARTBUTTON 32
-#define STARTBUTTON 32
-#define STOPBUTTON 33
-// #define S1 17
-// #define S2 16
-// #define KEY 18
-#define S1 2
-#define S2 3
-#define KEY 4
+#define S1 32 
+#define S2 33 
+#define KEY 34 
 
 #define CLK 19
 #define DIO 23
-
+#define CLK2 4
+#define DIO2 27
 #define BUZZER 13
-#define HEAT 2
 
+#define PUMP_LED 0
+#define HEAT_LED 1
+#define PUMP_ZERO 2
+#define BLINK_LED 3 // stop/alarm led
+
+#define START_BUTTON 4
+#define STOP_BUTTON 5

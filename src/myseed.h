@@ -59,3 +59,27 @@ private:
     byte chozenSeed;
 };
 MySeed mySeed(0);
+
+class MCPBlinker : public VirtBlinker {
+   public:
+    MCPBlinker(uint8_t pin) {
+        _pin = pin;
+    }
+    
+    bool tick() {
+        if (VirtBlinker::tick()) {
+            mcp.digitalWrite(_pin, state());
+            return true;
+        }
+        return false;
+    }
+    
+    void stopBlink() {
+        stop();  // вызываем метод родительского класса для остановки мигания
+        mcp.digitalWrite(_pin, LOW);  // выключаем светодиод
+    }
+    
+   private:
+    uint8_t _pin;
+};
+

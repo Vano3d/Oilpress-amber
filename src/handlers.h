@@ -136,7 +136,7 @@ void handleWebStop(AsyncWebServerRequest *request)
     stopProcess();
     endScreen();
     // tftMainScreen();
-    stopLed.stop();
+    blinker.stopBlink();
   }
 
   request->send(200, "text/plain", "Web stopped");

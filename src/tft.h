@@ -61,26 +61,6 @@ void diapazonsForParams() {
     drwawArrows();
 }
 
-// рисуем бочонок
-void barrelOn() {
-  tft.drawLine(CORDX, CORDY, CORDX, CORDY+40, TFT_WHITE); // бочка лево
-  tft.drawLine(CORDX, CORDY+40, CORDX+40, CORDY+40, TFT_WHITE); // бочка низ
-  tft.drawLine(CORDX+40, CORDY+40, CORDX+40, CORDY, TFT_WHITE); // бочка право
-
-  tft.drawLine(CORDX+5, CORDY+13, CORDX+35, CORDY+13, TFT_WHITE); // поршень
-  tft.drawLine(CORDX+12, CORDY+13, CORDX+12, CORDY-7, TFT_WHITE); // ГЦ лево
-  tft.drawLine(CORDX+12, CORDY-7, CORDX+28, CORDY-7, TFT_WHITE); // ГЦ верх 
-  tft.drawLine(CORDX+28, CORDY-7, CORDX+28, CORDY+13, TFT_WHITE); // ГЦ право 
-
-  tft.drawLine(CORDX+20, CORDY+20, CORDX+20, CORDY+33, TFT_WHITE); // стрелка 
-  tft.drawLine(CORDX+20, CORDY+33, CORDX+16, CORDY+27, TFT_WHITE); // стрелка лево 
-  tft.drawLine(CORDX+20, CORDY+33, CORDX+24, CORDY+27, TFT_WHITE); // стрелка право 
-}
-
-void barrelOff() {
-   tft.fillRect(CORDX-2, CORDY-9, CORDX+42, CORDY+42, TFT_BLACK);
-}
-
 void nameAndTime() {
 myTime.end = 0;
 
@@ -197,8 +177,7 @@ void processScreen() {
   tft.println("м");
   tft.setCursor(188, 115);
   tft.println("с");
-  tft.unloadFont();
-  tft.setTextSize(3);
+  // tft.unloadFont();
   tft.setTextColor(TFT_ORANGE, TFT_BLACK);
   screenBeginFlag = false;
 }
@@ -394,4 +373,41 @@ void wifiScreenAP() {
   tft.setCursor((tft.width() - textWidth)/2, 288);
   tft.println(dnsName + ".local");
   tft.unloadFont();
+}
+
+void updateDisplays() {
+  
+    // Обновление времени
+    mySprite.fillSprite(TFT_BLACK); // Очистка спрайта
+    mySprite.setCursor(0, 0);
+    mySprite.print(String(myTime.leftHour) + " ч " + String(myTime.leftMins) + " м " + String(myTime.leftSec)+ " с");
+    mySprite.pushSprite(40, 113); // Позиция на дисплее
+
+    // Обновление давления
+    mySprite.fillSprite(TFT_BLACK); // Очистка спрайта
+    mySprite.setCursor(0, 0);
+    mySprite.print(String(sensor.maxPress) + " - " + String(sensor.minPress) + " (" + String(sensor.pressure) + ")");
+    mySprite.pushSprite(40, 185); // Позиция на дисплее
+
+    // Обновление температуры
+    mySprite.fillSprite(TFT_BLACK); // Очистка спрайта
+    mySprite.setCursor(0, 0);
+    mySprite.print(String(sensor.maxTemp) + " - " + String(sensor.minTemp) + " (" + String(sensor.temp) + ")");
+    mySprite.pushSprite(40, 265); // Позиция на дисплее
+
+    if (mcp.digitalRead(PUMP_LED)) {
+      tft.fillCircle(20, 195, 5, TFT_GREEN);
+    } else if (mcp.digitalRead(PUMP_ZERO)) {
+      tft.fillCircle(20, 195, 5, TFT_BLUE);
+    } else {
+      tft.fillCircle(20, 195, 5, TFT_BLACK);
+    }
+ 
+
+    if (mcp.digitalRead(HEAT_LED)) {
+      tft.fillCircle(20, 275, 5, TFT_GREEN);
+    } else {
+      tft.fillCircle(20, 275, 5, TFT_BLACK);
+    }
+    
 }
