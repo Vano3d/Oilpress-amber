@@ -377,6 +377,7 @@ void wifiScreenAP() {
 }
 
 void updateDisplays() {
+  
     // Обновление времени
     mySprite.fillSprite(TFT_BLACK); // Очистка спрайта
     mySprite.setCursor(0, 0);
