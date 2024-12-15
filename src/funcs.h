@@ -62,6 +62,7 @@ void startProcess() {
   // stopLed.stop();
   blinker.stopBlink();
   currentScreen = PROCESS;
+
   if (beeperFlag) tone(BUZZER, 1500, 150);
   Serial.print("Запущена культура № ");
   Serial.println(chozenSeed);
@@ -78,7 +79,6 @@ void stopProcess() {
   endFlag = 1;
   wasStartedFlag = 0;
   myTime.current = 0;
-  continueTime = 0;
   Serial.println("Отжим остановлен");
   currentScreen = END;
 }

@@ -178,7 +178,6 @@ void processScreen() {
   tft.setCursor(188, 115);
   tft.println("с");
   // tft.unloadFont();
-  // tft.setTextSize(3);
   tft.setTextColor(TFT_ORANGE, TFT_BLACK);
   screenBeginFlag = false;
 }
@@ -387,12 +386,28 @@ void updateDisplays() {
     // Обновление давления
     mySprite.fillSprite(TFT_BLACK); // Очистка спрайта
     mySprite.setCursor(0, 0);
-    mySprite.print(String(sensor.maxPress) + " - " + String(sensor.minPress));
+    mySprite.print(String(sensor.maxPress) + " - " + String(sensor.minPress) + " (" + String(sensor.pressure) + ")");
     mySprite.pushSprite(40, 185); // Позиция на дисплее
 
     // Обновление температуры
     mySprite.fillSprite(TFT_BLACK); // Очистка спрайта
     mySprite.setCursor(0, 0);
-    mySprite.print(String(sensor.maxTemp) + " - " + String(sensor.minTemp));
+    mySprite.print(String(sensor.maxTemp) + " - " + String(sensor.minTemp) + " (" + String(sensor.temp) + ")");
     mySprite.pushSprite(40, 265); // Позиция на дисплее
+
+    if (mcp.digitalRead(PUMP_LED)) {
+      tft.fillCircle(20, 195, 5, TFT_GREEN);
+    } else if (mcp.digitalRead(PUMP_ZERO)) {
+      tft.fillCircle(20, 195, 5, TFT_BLUE);
+    } else {
+      tft.fillCircle(20, 195, 5, TFT_BLACK);
+    }
+ 
+
+    if (mcp.digitalRead(HEAT_LED)) {
+      tft.fillCircle(20, 275, 5, TFT_GREEN);
+    } else {
+      tft.fillCircle(20, 275, 5, TFT_BLACK);
+    }
+    
 }

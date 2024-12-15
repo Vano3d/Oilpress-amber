@@ -117,7 +117,7 @@ void setup() {
 
   timerSerialDelay.setInterval(500);
   timerIndicatorDelay.setInterval(200);
-  processUpdTmr.setInterval(1000);
+  processUpdTmr.setInterval(200);
   btnStatusCheck.setInterval(50);
 
 
