@@ -16,6 +16,8 @@
 #define CORDX 100
 #define CORDY 240
 
+
+
 float pressureDivider;
 byte safetyTime, beeperFlag, sensorPressure;
 // byte beeperFlag;
@@ -173,6 +175,4 @@ GTimer tempTimer(MS, 500);
 GTimer pumpSwitchTmr(MS);  // таймер для задержки переключения помп
 
 MCPBlinker blinker(BLINK_LED);
-
-
 
