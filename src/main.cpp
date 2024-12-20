@@ -255,16 +255,17 @@ void setup() {
     handleSendSettings(request);
   });
 
-  server.on("/startform", HTTP_GET, [](AsyncWebServerRequest * request) {
-    handleStartForm(request);
-  });
+  // server.on("/startform", HTTP_GET, [](AsyncWebServerRequest * request) {
+  //   handleStartForm(request);
+  // });
+  
 
   server.on("/web-stop", HTTP_GET, [](AsyncWebServerRequest * request) {
     handleWebStop(request);
   });
 
-  // server.on("/web-start", HTTP_GET, [](AsyncWebServerRequest *request)
-  //           { handleWebStart(request); });
+  server.on("/web-start", HTTP_GET, [](AsyncWebServerRequest *request)
+            { handleWebStart(request); });
 
   // safetyTime = sok[0]["protection"].as <int> ();
   // beeperFlag = sok[0]["beeper"].as <bool> ();
@@ -406,7 +407,7 @@ void loop() {
   */
   if (wasStartedFlag) myTime.current = millis() / 1000ul - myTime.beforeStart + continueTime;
 
-  // главный алгоритм, поддерживающий давление в диапазоне minPress-maxPress
+  // алгоритм сброса давления
 if (sensor.maxPress == 0 && sensor.minPress == 0 && wasStartedFlag) {
     // Если оба значения давления равны нулю
     pump_off();  // Выключаем основную помпу
@@ -527,6 +528,10 @@ if (sensor.maxPress == 0 && sensor.minPress == 0 && wasStartedFlag) {
     }
   }
 
+  if (currentScreen == PRE_HEAT) {
+    updatePreHeat();
+  }
+
   if (currentScreen == WIFIINFO && wifiStrengthTmr.isReady()) {
     // tft.fillRect(155, 15, 60, 30, TFT_BLACK);
     updateSignalStrength();
@@ -552,7 +557,8 @@ if (tempTimer.isReady()) sensor.temp = thermocouple.readCelsius();
     Serial.print(sensor.maxTemp);
     Serial.print("-");
     Serial.println(sensor.minTemp);
-
+    Serial.print("Pre-het flag: ");
+    Serial.println(preHeatStage);
 
 
   }
@@ -562,5 +568,9 @@ if (tempTimer.isReady()) sensor.temp = thermocouple.readCelsius();
     startProcess();
     webStartFlag = false;
   }
+
+  checkPreHeat();
+
+  if (preHeatStage) pressureControlPreHeatMode();
 
 }

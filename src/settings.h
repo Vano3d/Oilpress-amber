@@ -96,7 +96,8 @@ enum Screen {
   ALARM,
   END, 
   WIFICONNECT,
-  WIFIINFO
+  WIFIINFO,
+  PRE_HEAT
 };
 
 Screen currentScreen = MAIN;
@@ -123,7 +124,7 @@ String factorySettings = "[{\"name\":\"Программа 1\",\"stages\":[{\"max
 String facttoryParams = "[{\"protection\": 12,\"beeper\": false, \"sensor\": 60, \"ssid\": \"name\", \"password\": \"password\"}]";
 
 
-bool isADCConnected, wasStartedStockUp, screenBeginFlag, webStartFlag, saveSetsFlag;
+bool isADCConnected, wasStartedStockUp, screenBeginFlag, webStartFlag, saveSetsFlag, preHeatStage;
 
 String dnsName = "maslobot";
 bool isConnectedToRouter;
@@ -159,7 +160,7 @@ byte thermoCLK = 18;
 
 MAX6675 thermocouple(thermoCLK, thermoCS, thermoDO);
 
-GTimer tempTimer(MS, 500);
+GTimer tempTimer(MS, 500); // частота опроса датчика температуры
 
 GTimer pumpSwitchTmr(MS);  // таймер для задержки переключения помп
 

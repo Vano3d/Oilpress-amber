@@ -173,6 +173,8 @@ void processScreen() {
   screenBeginFlag = false;
 }
 
+
+
 // экран окончания процесса
 void endScreen()
 {
@@ -399,6 +401,14 @@ void wifiScreenAP() {
   tft.unloadFont();
 }
 
+void updatePressure(int positionY) {
+  mySprite.loadFont(myFont28);
+  mySprite.fillSprite(TFT_BLACK); // Очистка спрайта
+  mySprite.setCursor(0, 0);
+  mySprite.print(String(sensor.pressure) + " - " + String(sensor.minPress) + " (" + String(sensor.pressure) + ")");
+  mySprite.pushSprite(40, positionY); // Позиция на дисплее
+}
+
 void updateDisplays() {
     mySprite.loadFont(myFont28);
     // Обновление времени
@@ -411,7 +421,11 @@ void updateDisplays() {
     // Обновление давления
     mySprite.fillSprite(TFT_BLACK); // Очистка спрайта
     mySprite.setCursor(0, 0);
-    mySprite.print(String(sensor.maxPress) + " - " + String(sensor.minPress) + " (" + String(sensor.pressure) + ")");
+    if (sensor.maxPress == 0 || sensor.minPress == 0) {
+      mySprite.print(String("сброс") + " (" + String(sensor.pressure) + ")");
+    } else {
+      mySprite.print(String(sensor.maxPress) + " - " + String(sensor.minPress) + " (" + String(sensor.pressure) + ")");
+    }
     mySprite.pushSprite(40, 185); // Позиция на дисплее
 
     // Обновление температуры
@@ -436,4 +450,59 @@ void updateDisplays() {
       tft.fillCircle(20, 275, 5, TFT_BLACK);
     }
     
+}
+
+
+void preHeatScreen() {
+  currentScreen = PRE_HEAT;
+  tft.fillScreen(TFT_BLACK);
+  nameAndTime();
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  textWidth = tft.textWidth("Давление");
+  tft.setCursor((tft.width() - textWidth) / 2, 230);
+  tft.println("Давление");
+
+  textWidth = tft.textWidth("Температура");
+  tft.setCursor((tft.width() - textWidth) / 2, 155);
+  tft.println("Температура");
+
+  tft.unloadFont();
+
+  tft.loadFont(myFont28);
+  tft.setTextColor(TFT_WHITE, TFT_BLACK);
+  textWidth = tft.textWidth("РАЗОГРЕВ");
+  tft.setCursor((tft.width() - textWidth) / 2, 85);
+  tft.println("РАЗОГРЕВ");
+  tft.unloadFont();
+}
+
+void updatePreHeat() {
+  mySprite.loadFont(myFont28);
+  //температура
+  mySprite.fillSprite(TFT_BLACK); // Очистка спрайта
+  mySprite.setCursor(0, 0);
+  mySprite.print(String(sensor.temp) + " -> " + String(sensor.maxTemp));
+  mySprite.pushSprite(40, 185);
+
+// давление
+  mySprite.fillSprite(TFT_BLACK); // Очистка спрайта
+  mySprite.setCursor(0, 0);
+  mySprite.print(String(sensor.maxPress) + " - " + String(sensor.minPress) + " (" + String(sensor.pressure) + ")");
+  mySprite.pushSprite(40, 265); // Позиция на дисплее
+  mySprite.unloadFont();
+
+    if (mcp.digitalRead(PUMP_LED)) {
+      tft.fillCircle(20, 275, 5, TFT_GREEN);
+    } else if (mcp.digitalRead(PUMP_ZERO)) {
+      tft.fillCircle(20, 275, 5, TFT_BLUE);
+    } else {
+      tft.fillCircle(20, 275, 5, TFT_BLACK);
+    }
+ 
+    if (mcp.digitalRead(HEAT_LED)) {
+      tft.fillCircle(20, 195, 5, TFT_GREEN);
+    } else {
+      tft.fillCircle(20, 195, 5, TFT_BLACK);
+    }
+
 }

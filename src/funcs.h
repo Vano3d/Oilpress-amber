@@ -229,6 +229,14 @@ bool stopButtonPressed = false;
 unsigned long lastStartButtonTime = 0;
 unsigned long lastStopButtonTime = 0;
 
+void startHeating() {
+  if (sensor.temp < sensor.maxTemp) {
+    preHeatStage = true;
+    preHeatScreen();
+    heat_on();
+    Serial.println("Включение нагрева");
+  } else if (sensor.temp >= sensor.maxTemp) startProcess();
+}
 
 // Функция обработки нажатия кнопки Старт
 void onStartButtonPressed() {
@@ -240,13 +248,16 @@ void onStartButtonPressed() {
     break; 
   case ALARM:
   case END:
+  case PRE_HEAT:
+  case PROCESS:
     break;
     // запускает процесс на других экранах
   default:
     // stopLed.stop(); // предположительно остановка светодиода
     blinker.stopBlink(); // останавливаем мигание
-    currentScreen = PROCESS; // меняем экран на PROCESS
-    startProcess(); // запускаем процесс
+    // currentScreen = PROCESS; // меняем экран на PROCESS
+    // startProcess(); // запускаем процесс
+    startHeating(); // запускаем разогрев
     break;
   }
 }
@@ -254,8 +265,10 @@ void onStartButtonPressed() {
 // Функция обработки нажатия кнопки Стоп
 void onStopButtonPressed() {
   Serial.println("Кнопка 'Стоп' нажата");
-  stopProcess();
-  endScreen();
+  if (wasStartedFlag || preHeatStage) {
+    stopProcess();
+    endScreen();
+  }
 }
 
 void checkButtons() {
@@ -289,4 +302,28 @@ void checkButtons() {
       }
     }
   }
+}
+
+
+
+void checkPreHeat() {
+  
+    if (sensor.temp >= sensor.maxTemp && preHeatStage) {
+      preHeatStage = false;
+      heat_off();
+      Serial.println("Нагрев завершен");
+      startProcess();
+    }
+}
+
+void pressureControlPreHeatMode() {
+    if (sensor.pressure >= sensor.maxPress && sensor.isFilled) {
+        pump_off();
+        sensor.isFilled = 0;
+    } else if (sensor.pressure <= sensor.minPress && !sensor.isFilled) {
+        if(sensor.minPress != 0) {
+            pump_on();
+            sensor.isFilled = 1;
+        }
+    }
 }
