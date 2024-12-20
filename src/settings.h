@@ -20,10 +20,6 @@
 
 float pressureDivider;
 byte safetyTime, beeperFlag, sensorPressure;
-// byte beeperFlag;
-// byte sensorPressure;
-
-
 
 const char* ssid = "maslobot1";  
 const char* password = "1234567890";
@@ -43,6 +39,7 @@ GTimer buzzTimer2(MS);
 GTimer pumpOnTmr(MS);
 GTimer processUpdTmr(MS);
 GTimer btnStatusCheck(MS);
+GTimer wifiStrengthTmr(MS);
 
 uint32_t processScreenBegin;
 
@@ -56,10 +53,6 @@ EncButton enc(S1, S2, KEY);
 
 // Adafruit_ADS1115 ads;
 ADS1115 ADS(0x48);
-
-TFT_eSPI tft = TFT_eSPI();
-
-TFT_eSprite mySprite = TFT_eSprite(&tft);
 
 bool endFlag = 0; // флаг окончания всего процесса
 bool wasStartedFlag = 0; // начинался ли процесс
@@ -94,10 +87,6 @@ int arrayLen;
 byte cultOnScreen;
 
 bool stopLedFlag = 0;
-
-/* 1-mainScreen, 2-diapazonScreen, 3-chartScreen, 4-processScreen, 
-5-alarmScreen, 6-endScreen, 7-WiFi connect screen, 8-WiFi info screen 
-*/
 
 enum Screen {
   MAIN = 1,

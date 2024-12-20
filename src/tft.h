@@ -169,15 +169,6 @@ void processScreen() {
   textWidth = tft.textWidth("Диапазон, град");
   tft.setCursor((tft.width() - textWidth) / 2, 230);
   tft.println("Диапазон, град");
-
-  tft.setTextColor(TFT_WHITE, TFT_BLACK);
-  tft.setCursor(58, 115);
-  tft.println("ч");
-  tft.setCursor(123, 115);
-  tft.println("м");
-  tft.setCursor(188, 115);
-  tft.println("с");
-  // tft.unloadFont();
   tft.setTextColor(TFT_ORANGE, TFT_BLACK);
   screenBeginFlag = false;
 }
@@ -259,6 +250,39 @@ void cursorBack() {
   tft.setTextColor(TFT_WHITE, TFT_BLACK);
   tft.drawString(">", 2, chozenSeed%PROGS_ON_SCREEN * 30 + 39);
   tft.fillRect(2, (chozenSeed%PROGS_ON_SCREEN + 1) * 30 + 42, 15, 17, TFT_BLACK);
+}
+
+void displaySignalStrength() {
+  // Учитываем масштабы RSSI
+  int level = map(WiFi.RSSI(), -100, -30, 0, 5); // Преобразование в уровень (0-5)
+
+  // Отображаем столбики
+  int barHeightMin = 9; // мин. высота одного столбика
+  int spacing = 12; // Расстояние между столбиками
+  byte barWidth = 7; // Ширина столбика
+
+  for (int i = 0; i < 5; i++) {
+    int x = i * spacing; // Позиция начала столбика по X в спрайте
+    int y = 20; // Позиция начала столбика по Y
+
+    // Определяем цвет в зависимости от заполнения
+    if (i < level) {
+      signalSprite.fillRect(x, y - ((i + 1) * 3), barWidth, barHeightMin + (i * 3), TFT_GREEN); // Заполненный зеленый цвет
+    } else {
+      signalSprite.drawRect(x, y - ((i + 1) * 3), barWidth, barHeightMin + (i * 3), TFT_GREEN); // Пустой цвет (контур)
+    }
+  }
+}
+
+void updateSignalStrength() {
+  // Очищаем спрайт перед обновлением
+  signalSprite.fillSprite(TFT_BLACK);
+  
+  // Получаем уровень сигнала и отображаем его
+  displaySignalStrength();
+  
+  // Отправляем спрайт на экран
+  signalSprite.pushSprite(160, 15); // X и Y позиции на основном экране
 }
 
 void wifiConnectScreen() {
@@ -376,8 +400,9 @@ void wifiScreenAP() {
 }
 
 void updateDisplays() {
-  
+    mySprite.loadFont(myFont28);
     // Обновление времени
+
     mySprite.fillSprite(TFT_BLACK); // Очистка спрайта
     mySprite.setCursor(0, 0);
     mySprite.print(String(myTime.leftHour) + " ч " + String(myTime.leftMins) + " м " + String(myTime.leftSec)+ " с");
@@ -395,6 +420,8 @@ void updateDisplays() {
     mySprite.print(String(sensor.maxTemp) + " - " + String(sensor.minTemp) + " (" + String(sensor.temp) + ")");
     mySprite.pushSprite(40, 265); // Позиция на дисплее
 
+    mySprite.unloadFont();
+
     if (mcp.digitalRead(PUMP_LED)) {
       tft.fillCircle(20, 195, 5, TFT_GREEN);
     } else if (mcp.digitalRead(PUMP_ZERO)) {
@@ -403,7 +430,6 @@ void updateDisplays() {
       tft.fillCircle(20, 195, 5, TFT_BLACK);
     }
  
-
     if (mcp.digitalRead(HEAT_LED)) {
       tft.fillCircle(20, 275, 5, TFT_GREEN);
     } else {

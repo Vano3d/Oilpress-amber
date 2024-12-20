@@ -19,10 +19,14 @@
 #include "ESPAsyncWebServer.h"
 #include <TFT_eSPI.h>
 extern TFT_eSPI tft; 
+TFT_eSPI tft = TFT_eSPI();
+
 extern TFT_eSprite mySprite;
-extern TFT_eSprite pressureSprite;
-extern TFT_eSprite tempSprite;
-extern TFT_eSprite timeSprite;
+extern TFT_eSprite signalSprite;
+
+TFT_eSprite mySprite = TFT_eSprite(&tft);
+TFT_eSprite signalSprite = TFT_eSprite(&tft);
+
 #include <ESPmDNS.h>
 // #include "freertos/FreeRTOS.h"
 // #include "freertos/task.h"
@@ -106,11 +110,10 @@ void setup() {
   tft.setRotation(0);
   tft.fillScreen(TFT_BLACK);
 
-  if (!mySprite.createSprite(200, 40)) {
-    Serial.println("Ошибка создания timeSprite");
-    }
-    mySprite.setTextColor(TFT_ORANGE, TFT_BLACK); // Установка цветов текста и фона
-    mySprite.loadFont(myFont28);
+  mySprite.createSprite(200, 40); 
+  mySprite.setTextColor(TFT_ORANGE, TFT_BLACK); // Установка цветов текста и фона
+
+  signalSprite.createSprite(100, 30);
 
   enc.setEncReverse(0);
   enc.counter = 0; // сбросить счётчик энкодера
@@ -119,7 +122,7 @@ void setup() {
   timerIndicatorDelay.setInterval(200);
   processUpdTmr.setInterval(200);
   btnStatusCheck.setInterval(50);
-
+  wifiStrengthTmr.setInterval(500);
 
   // Подключение внешнего АЦП
   checkADCConnection();
@@ -273,6 +276,7 @@ void setup() {
     myTime.past.hours = 0;
     myTime.past.mins = 0;
     myTime.past.sec = 0;
+    myTime.maintainStart = 0;
 }
 
 void loop() {
@@ -523,6 +527,12 @@ if (sensor.maxPress == 0 && sensor.minPress == 0 && wasStartedFlag) {
     }
   }
 
+  if (currentScreen == WIFIINFO && wifiStrengthTmr.isReady()) {
+    // tft.fillRect(155, 15, 60, 30, TFT_BLACK);
+    updateSignalStrength();
+
+  }
+
 if (tempTimer.isReady()) sensor.temp = thermocouple.readCelsius();
 
   // Вывод в Serial
@@ -552,12 +562,5 @@ if (tempTimer.isReady()) sensor.temp = thermocouple.readCelsius();
     startProcess();
     webStartFlag = false;
   }
-//  if (tempTimer.isReady()) {  // Проверяем температуру раз в секунду
-//         float temp = thermocouple.readCelsius();
-//         if (temp > 30) {
-//             pcf8574.digitalWrite(P0, 0);
-//         } else {
-//             pcf8574.digitalWrite(P0, 1);
-//         }
-//     }
+
 }
