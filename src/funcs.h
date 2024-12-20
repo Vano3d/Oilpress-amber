@@ -59,7 +59,6 @@ void startProcess() {
   myTime.beforeStart = millis() / 1000ul;
   wasStartedFlag = 1;
 
-  // stopLed.stop();
   blinker.stopBlink();
   currentScreen = PROCESS;
 
@@ -74,6 +73,7 @@ void stopProcess() {
   heat_off();
   sensor.isFilled = 0;
   sensor.isWarmed = 0;
+  preHeatStage = 0;
   buzzFlag = 1;
   endTimer.setTimeout(100);
   endFlag = 1;
@@ -122,7 +122,7 @@ void saveSets() {
       return;
     }
     
-    if (!wasStartedFlag) tftMainScreen();
+    if (!wasStartedFlag && !preHeatStage) tftMainScreen();
 }
 
 void resetWiFi() {
@@ -253,7 +253,6 @@ void onStartButtonPressed() {
     break;
     // запускает процесс на других экранах
   default:
-    // stopLed.stop(); // предположительно остановка светодиода
     blinker.stopBlink(); // останавливаем мигание
     // currentScreen = PROCESS; // меняем экран на PROCESS
     // startProcess(); // запускаем процесс

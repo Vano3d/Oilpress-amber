@@ -255,6 +255,10 @@ void setup() {
     handleSendSettings(request);
   });
 
+  server.on("/favicon.ico", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(204);
+});
+
   // server.on("/startform", HTTP_GET, [](AsyncWebServerRequest * request) {
   //   handleStartForm(request);
   // });
@@ -475,7 +479,6 @@ if (sensor.maxPress == 0 && sensor.minPress == 0 && wasStartedFlag) {
   // отрубаем пресс по времени окончания
   if (myTime.current >= myTime.end && wasStartedFlag) {
     stopProcess();
-    // stopLed.blink(100, 200, 600);
     blinkHundredTimes(); 
     endScreen();
   }
@@ -557,7 +560,7 @@ if (tempTimer.isReady()) sensor.temp = thermocouple.readCelsius();
     Serial.print(sensor.maxTemp);
     Serial.print("-");
     Serial.println(sensor.minTemp);
-    Serial.print("Pre-het flag: ");
+    Serial.print("preHeatStage: ");
     Serial.println(preHeatStage);
 
 

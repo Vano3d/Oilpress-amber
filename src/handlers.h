@@ -69,14 +69,14 @@ void handleSendSettings(AsyncWebServerRequest *request)
 void handleWebStart(AsyncWebServerRequest *request)
 {
   // Получаем значение table из запроса
-  if (request->hasParam("table") && !wasStartedFlag)
+  if (request->hasParam("table") && !wasStartedFlag && !preHeatStage)
   {
     const AsyncWebParameter *p = request->getParam("table");
     int tableIndex = p->value().toInt();
 
     // Запускаем процесс
-    chozenSeed = tableIndex;
-
+    chozenSeed = tableIndex;  
+    mySeed.updateSeed(chozenSeed);
     blinker.stopBlink();
     startHeating();
 
@@ -157,7 +157,7 @@ void handleWebStart(AsyncWebServerRequest *request)
 
 void handleWebStop(AsyncWebServerRequest *request)
 {
-  if (wasStartedFlag)
+  if (wasStartedFlag || preHeatStage)
   {
     stopProcess();
     endScreen();
