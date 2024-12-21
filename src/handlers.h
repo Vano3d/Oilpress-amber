@@ -66,72 +66,98 @@ void handleSendSettings(AsyncWebServerRequest *request)
   }
 }
 
-void handleStartForm(AsyncWebServerRequest *request)
+void handleWebStart(AsyncWebServerRequest *request)
 {
-  if (request->hasParam("table") && request->hasParam("row") && !wasStartedFlag)
+  // Получаем значение table из запроса
+  if (request->hasParam("table") && !wasStartedFlag && !preHeatStage)
   {
-    int tableIndex = request->getParam("table")->value().toInt();
-    int rowIndex = request->getParam("row")->value().toInt();
+    const AsyncWebParameter *p = request->getParam("table");
+    int tableIndex = p->value().toInt();
 
-    chozenSeed = tableIndex;
+    // Запускаем процесс
+    chozenSeed = tableIndex;  
     mySeed.updateSeed(chozenSeed);
-    
+    blinker.stopBlink();
+    startHeating();
 
-    myTime.totalHour = 0;
-    myTime.leftMins = 0;
-
-    myTime.end = mySeed.calcEndTime();
-    myTime.totalHour = myTime.end / 3600;
-    myTime.leftMins = (myTime.end - myTime.totalHour * 3600) / 60;  
-
-    if (doc[chozenSeed]["stages"].is<JsonArray>())
-    {
-      JsonArray valueArray = doc[chozenSeed]["stages"];
-      if (valueArray.size() > rowIndex - 3)
-      {
-        continueTime = valueArray[rowIndex - 3].as<int>() * 60;
-
-      }
-      else
-      {
-        continueTime = 0;
-      }
-    }
-    else
-    {
-      Serial.println("Invalid seed structure.");
-      request->send(400, "text/plain", "Invalid seed structure.");
-      return;
-    }
-    // поднимаем флаг на запуск процесса
-    webStartFlag = true;
-    request->send(200, "text/plain", "Command received");
-    Serial.print("Handler Serial: ");
-    Serial.println(chozenSeed);
-    Serial.print("Total hour: ");
-    Serial.println(myTime.leftHour);
-    Serial.print("Total mins: ");
-    Serial.println(myTime.leftMins);
-    
+    // Отправляем ответ
+    request->send(200, "text/plain", "Process started");
+    Serial.print("Web-started: ");
+    Serial.println(doc[chozenSeed]["name"].as<const char *>());
   }
   else
   {
-    String reason = "Reason: ";
-    if (!request->hasParam("table"))
-      reason += "'table' parameter missing. ";
-    if (!request->hasParam("row"))
-      reason += "'row' parameter missing. ";
-    if (wasStartedFlag)
-      reason += "Process already started. ";
-
-    Serial.println(reason);
-    request->send(400, "text/plain", "Invalid request. " + reason);
+    // Если не получен tableIndex, отправляем ошибку
+    request->send(400, "text/plain", "Не передан table");
   }
 }
 
+// void handleStartForm(AsyncWebServerRequest *request)
+// {
+//   if (request->hasParam("table") && request->hasParam("row") && !wasStartedFlag)
+//   {
+//     int tableIndex = request->getParam("table")->value().toInt();
+//     int rowIndex = request->getParam("row")->value().toInt();
+
+//     chozenSeed = tableIndex;
+//     mySeed.updateSeed(chozenSeed);
+    
+
+//     myTime.totalHour = 0;
+//     myTime.leftMins = 0;
+
+//     myTime.end = mySeed.calcEndTime();
+//     myTime.totalHour = myTime.end / 3600;
+//     myTime.leftMins = (myTime.end - myTime.totalHour * 3600) / 60;  
+
+//     if (doc[chozenSeed]["stages"].is<JsonArray>())
+//     {
+//       JsonArray valueArray = doc[chozenSeed]["stages"];
+//       if (valueArray.size() > rowIndex - 3)
+//       {
+//         continueTime = valueArray[rowIndex - 3].as<int>() * 60;
+
+//       }
+//       else
+//       {
+//         continueTime = 0;
+//       }
+//     }
+//     else
+//     {
+//       Serial.println("Invalid seed structure.");
+//       request->send(400, "text/plain", "Invalid seed structure.");
+//       return;
+//     }
+//     // поднимаем флаг на запуск процесса
+//     webStartFlag = true;
+//     request->send(200, "text/plain", "Command received");
+//     Serial.print("Handler Serial: ");
+//     Serial.println(chozenSeed);
+//     Serial.print("Total hour: ");
+//     Serial.println(myTime.leftHour);
+//     Serial.print("Total mins: ");
+//     Serial.println(myTime.leftMins);
+    
+//   }
+//   else
+//   {
+//     String reason = "Reason: ";
+//     if (!request->hasParam("table"))
+//       reason += "'table' parameter missing. ";
+//     if (!request->hasParam("row"))
+//       reason += "'row' parameter missing. ";
+//     if (wasStartedFlag)
+//       reason += "Process already started. ";
+
+//     Serial.println(reason);
+//     request->send(400, "text/plain", "Invalid request. " + reason);
+//   }
+// }
+
 void handleWebStop(AsyncWebServerRequest *request)
 {
-  if (wasStartedFlag)
+  if (wasStartedFlag || preHeatStage)
   {
     stopProcess();
     endScreen();
