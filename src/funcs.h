@@ -34,6 +34,7 @@ void pumpZero_off() {
   mcp.digitalWrite(PUMP_ZERO, LOW);
 }
 
+// функция пищания 3 раза при поднятии флага
 void buzzer() {
   if (buzzFlag) {
     tone(BUZZER, 1000, 650);
@@ -73,7 +74,7 @@ void stopProcess() {
   sensor.isFilled = 0;
   sensor.isWarmed = 0;
   preHeatStage = 0;
-  buzzFlag = 1;
+  buzzFlag = 1; // будет писчать 3 раза
   endTimer.setTimeout(100);
   endFlag = 1;
   wasStartedFlag = 0;
@@ -232,6 +233,7 @@ void startHeating() {
   if (sensor.temp < sensor.maxTemp) {
     preHeatStage = true;
     preHeatScreen();
+    if (beeperFlag) tone(BUZZER, 1500, 150);
     heat_on();
     Serial.println("Включение нагрева");
   } else if (sensor.temp >= sensor.maxTemp) startProcess();
@@ -240,7 +242,6 @@ void startHeating() {
 
 
 void checkPreHeat() {
-  
     if (sensor.temp >= sensor.maxTemp && preHeatStage) {
       preHeatStage = false;
       heat_off();
