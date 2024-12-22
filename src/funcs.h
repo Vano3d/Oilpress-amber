@@ -7,11 +7,10 @@ void fsDeserialise() {
 }
 
 void pump_on() {
-  // digitalWrite(PUMP, 1);
   mcp.digitalWrite(PUMP_LED, HIGH);
   // при каждом включении помпы запускаем таймер
   pumpOnTmr.setTimeout(safetyTime*1000);
-  // barrelOn();
+
 }
 
 void pump_off() {
@@ -238,71 +237,6 @@ void startHeating() {
   } else if (sensor.temp >= sensor.maxTemp) startProcess();
 }
 
-// Функция обработки нажатия кнопки Старт
-void onStartButtonPressed() {
-  Serial.println("Кнопка 'Старт' нажата");
-  switch (currentScreen) {
-  case WIFIINFO: // если экран с WiFi, переходим на главный
-    currentScreen = MAIN;
-    tftMainScreen();
-    break; 
-  case ALARM:
-  case END:
-  case PRE_HEAT:
-  case PROCESS:
-    break;
-    // запускает процесс на других экранах
-  default:
-    blinker.stopBlink(); // останавливаем мигание
-    // currentScreen = PROCESS; // меняем экран на PROCESS
-    // startProcess(); // запускаем процесс
-    startHeating(); // запускаем разогрев
-    break;
-  }
-}
-
-// Функция обработки нажатия кнопки Стоп
-void onStopButtonPressed() {
-  Serial.println("Кнопка 'Стоп' нажата");
-  if (wasStartedFlag || preHeatStage) {
-    stopProcess();
-    endScreen();
-  }
-}
-
-void checkButtons() {
-  static bool lastStartButtonState = HIGH;
-  static bool lastStopButtonState = HIGH;
-
-  // Проверка кнопки "Старт"
-  bool currentStartButtonState = mcp.digitalRead(START_BUTTON);
-  if (currentStartButtonState != lastStartButtonState) {
-    unsigned long currentTime = millis();
-    if ((currentTime - lastStartButtonTime) > DEBOUNCE_TIME) {
-      lastStartButtonTime = currentTime;
-      lastStartButtonState = currentStartButtonState;
-      if (currentStartButtonState == LOW) { // Кнопка нажата
-        startButtonPressed = true;
-        Serial.println("Кнопка 'Старт' нажата");
-      }
-    }
-  }
-
-  // Проверка кнопки "Стоп"
-  bool currentStopButtonState = mcp.digitalRead(STOP_BUTTON);
-  if (currentStopButtonState != lastStopButtonState) {
-    unsigned long currentTime = millis();
-    if ((currentTime - lastStopButtonTime) > DEBOUNCE_TIME) {
-      lastStopButtonTime = currentTime;
-      lastStopButtonState = currentStopButtonState;
-      if (currentStopButtonState == LOW) { // Кнопка нажата
-        stopButtonPressed = true;
-        Serial.println("Кнопка 'Стоп' нажата");
-      }
-    }
-  }
-}
-
 
 
 void checkPreHeat() {
@@ -326,3 +260,71 @@ void pressureControlPreHeatMode() {
         }
     }
 }
+
+
+// Функция обработки нажатия кнопки Старт
+// void onStartButtonPressed() {
+//   Serial.println("Кнопка 'Старт' нажата");
+//   switch (currentScreen) {
+//   case WIFIINFO: // если экран с WiFi, переходим на главный
+//     currentScreen = MAIN;
+//     tftMainScreen();
+//     break; 
+//   case ALARM:
+//   case END:
+//   case PRE_HEAT:
+//   case PROCESS:
+//     break;
+//     // запускает процесс на других экранах
+//   default:
+//     blinker.stopBlink(); // останавливаем мигание
+//     // currentScreen = PROCESS; // меняем экран на PROCESS
+//     // startProcess(); // запускаем процесс
+//     startHeating(); // запускаем разогрев
+//     break;
+//   }
+// }
+
+
+
+// Функция обработки нажатия кнопки Стоп
+// void onStopButtonPressed() {
+//   Serial.println("Кнопка 'Стоп' нажата");
+//   if (wasStartedFlag || preHeatStage) {
+//     stopProcess();
+//     endScreen();
+//   }
+// }
+
+// void checkButtons() {
+//   static bool lastStartButtonState = HIGH;
+//   static bool lastStopButtonState = HIGH;
+
+//   // Проверка кнопки "Старт"
+//   bool currentStartButtonState = mcp.digitalRead(START_BUTTON);
+//   if (currentStartButtonState != lastStartButtonState) {
+//     unsigned long currentTime = millis();
+//     if ((currentTime - lastStartButtonTime) > DEBOUNCE_TIME) {
+//       lastStartButtonTime = currentTime;
+//       lastStartButtonState = currentStartButtonState;
+//       if (currentStartButtonState == LOW) { // Кнопка нажата
+//         startButtonPressed = true;
+//         Serial.println("Кнопка 'Старт' нажата");
+//       }
+//     }
+//   }
+
+//   // Проверка кнопки "Стоп"
+//   bool currentStopButtonState = mcp.digitalRead(STOP_BUTTON);
+//   if (currentStopButtonState != lastStopButtonState) {
+//     unsigned long currentTime = millis();
+//     if ((currentTime - lastStopButtonTime) > DEBOUNCE_TIME) {
+//       lastStopButtonTime = currentTime;
+//       lastStopButtonState = currentStopButtonState;
+//       if (currentStopButtonState == LOW) { // Кнопка нажата
+//         stopButtonPressed = true;
+//         Serial.println("Кнопка 'Стоп' нажата");
+//       }
+//     }
+//   }
+// }

@@ -43,11 +43,13 @@ GTimer wifiStrengthTmr(MS);
 
 uint32_t processScreenBegin;
 
+EncButton enc(S1, S2, KEY);
+Button stopBtn(STOPBUTTON);
+Button startBtn(STARTBUTTON);
+
 #define EB_DEB_TIME 50      // таймаут гашения дребезга кнопки (кнопка)
 #define EB_CLICK_TIME 500   // таймаут ожидания кликов (кнопка)
 #define EB_HOLD_TIME 600    // таймаут удержания (кнопка)
-
-EncButton enc(S1, S2, KEY);
 
 // Blinker stopLed(STOPLED);
 

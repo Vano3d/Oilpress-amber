@@ -1,5 +1,5 @@
-#define S1 32 
-#define S2 33 
+#define S1 35 
+#define S2 36 
 #define KEY 34 
 
 // индикатор давления
@@ -16,5 +16,8 @@
 #define PUMP_ZERO 2
 #define BLINK_LED 3 // stop/alarm led
 
-#define START_BUTTON 4 // mcp
-#define STOP_BUTTON 5 // mcp
+// #define START_BUTTON 4 // mcp
+// #define STOP_BUTTON 5 // mcp
+
+#define STARTBUTTON 32 // mcp
+#define STOPBUTTON 33 // mcp

@@ -96,8 +96,11 @@ void setup() {
   mcp.pinMode(PUMP_ZERO, OUTPUT);
   mcp.pinMode(BLINK_LED, OUTPUT); 
 
-  mcp.pinMode(START_BUTTON, INPUT_PULLUP);
-  mcp.pinMode(STOP_BUTTON, INPUT_PULLUP);
+  // mcp.pinMode(START_BUTTON, INPUT_PULLUP);
+  // mcp.pinMode(STOP_BUTTON, INPUT_PULLUP);
+
+  pinMode(STARTBUTTON, INPUT_PULLUP);
+  pinMode(STOPBUTTON, INPUT_PULLUP);
   
 
   mcp.digitalWrite(PUMP_LED, LOW);
@@ -286,18 +289,59 @@ void setup() {
 
 void loop() {
 
-  checkButtons();
+  // checkButtons();
   enc.tick();
+  startBtn.tick();
+  stopBtn.tick();
+
   // Обработка нажатия кнопки "Старт"
-  if (startButtonPressed) {
-    startButtonPressed = false; // Сбрасываем флаг после обработки
-    onStartButtonPressed();
+
+  if (startBtn.click() && !wasStartedFlag) { 
+  Serial.println("Кнопка 'Старт' нажата");
+  switch (currentScreen) {
+  case WIFIINFO: // если экран с WiFi, переходим на главный
+    currentScreen = MAIN;
+    tftMainScreen();
+    break; 
+  case ALARM:
+  case END:
+  case PRE_HEAT:
+  case PROCESS:
+    break;
+    // запускает процесс на других экранах
+  default:
+    blinker.stopBlink(); // останавливаем мигание
+    startHeating(); // запускаем разогрев
+    break;
+  }
   }
 
+  // if (startButtonPressed) {
+  //   startButtonPressed = false; // Сбрасываем флаг после обработки
+  //   onStartButtonPressed();
+  // }
+
   // Обработка нажатия кнопки "Стоп"
-  if (stopButtonPressed) {
-    stopButtonPressed = false; // Сбрасываем флаг после обработки
-    onStopButtonPressed();
+  // if (stopButtonPressed) {
+  //   stopButtonPressed = false; // Сбрасываем флаг после обработки
+  //   onStopButtonPressed();
+  // }
+
+  if (stopBtn.click()) {
+    switch (currentScreen)
+    {
+    case ALARM:
+      blinker.stopBlink();
+      tftMainScreen();
+      currentScreen = MAIN;
+      break;
+    default:
+      if (wasStartedFlag || preHeatStage) {
+      stopProcess();
+      endScreen();
+    }
+      break;
+    }
   }
   
   mySeed.updateSeed(chozenSeed);// обновляем класс MySeed регулярно
