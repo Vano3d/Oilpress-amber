@@ -399,6 +399,10 @@ void loop() {
   case 80:
     pressureDivider = PRESSURE80;
     break;
+  
+  case 100:
+    pressureDivider = PRESSURE100;
+    break;
 
   default:
   pressureDivider = 1.0; // Значение по умолчанию
@@ -585,7 +589,7 @@ if (sensor.maxPress == 0 && sensor.minPress == 0 && wasStartedFlag) {
 
   }
 
-if (tempTimer.isReady()) sensor.temp = thermocouple.readCelsius();
+if (tempTimer.isReady()) sensor.temp = constrain(thermocouple.readCelsius(), 0, 1000);
 
   // Вывод в Serial
   if (timerSerialDelay.isReady() && DEBUG == 1) {

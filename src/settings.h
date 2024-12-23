@@ -4,6 +4,7 @@
 #define PRESSURE60 44.1 // normal 43.4
 #define PRESSURE70 37.7 // normal 38.1 
 #define PRESSURE80 33 // normal 33
+#define PRESSURE100 26.1 //
 #define FORMAT_IF_FAILED 1
 #define DEBUG 1
 #define I2C_SDA 4
