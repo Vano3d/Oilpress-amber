@@ -6,18 +6,10 @@
 #define PRESSURE80 33 // normal 33
 #define PRESSURE100 26.1 //
 #define FORMAT_IF_FAILED 1
-#define DEBUG 1
-#define I2C_SDA 4
-#define I2C_SCL 5
+#define DEBUG 0
 
 #define PROGS_ON_SCREEN 9 // количество программ на экране
 #define DIAPS_ON_SCREEN 8 // количество диапазонов на экране
-
-// координаты бочонка
-#define CORDX 100
-#define CORDY 240
-
-
 
 float pressureDivider;
 byte safetyTime, beeperFlag, sensorPressure;

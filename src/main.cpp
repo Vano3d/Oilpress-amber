@@ -274,9 +274,6 @@ void setup() {
   server.on("/web-start", HTTP_GET, [](AsyncWebServerRequest *request)
             { handleWebStart(request); });
 
-  // safetyTime = sok[0]["protection"].as <int> ();
-  // beeperFlag = sok[0]["beeper"].as <bool> ();
-  // sensorPressure = sok[0]["sensor"].as <int> ();
 
     myTime.end = 0;
     myTime.totalHour = 0;
