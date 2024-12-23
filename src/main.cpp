@@ -132,10 +132,13 @@ void setup() {
 
   if (isADCConnected) {
   Serial.println("ADS connected :-)");
+  ADS.setGain(1);
 
  } else {
     Serial.println("Failed to initialize ADS.");
   }
+
+
 
   delay(100);
 
