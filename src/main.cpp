@@ -96,8 +96,11 @@ void setup() {
   mcp.pinMode(PUMP_ZERO, OUTPUT);
   mcp.pinMode(BLINK_LED, OUTPUT); 
 
-  mcp.pinMode(START_BUTTON, INPUT_PULLUP);
-  mcp.pinMode(STOP_BUTTON, INPUT_PULLUP);
+  // mcp.pinMode(START_BUTTON, INPUT_PULLUP);
+  // mcp.pinMode(STOP_BUTTON, INPUT_PULLUP);
+
+  pinMode(STARTBUTTON, INPUT_PULLUP);
+  pinMode(STOPBUTTON, INPUT_PULLUP);
   
 
   mcp.digitalWrite(PUMP_LED, LOW);
@@ -129,10 +132,13 @@ void setup() {
 
   if (isADCConnected) {
   Serial.println("ADS connected :-)");
+  ADS.setGain(1);
 
  } else {
     Serial.println("Failed to initialize ADS.");
   }
+
+
 
   delay(100);
 
@@ -271,9 +277,6 @@ void setup() {
   server.on("/web-start", HTTP_GET, [](AsyncWebServerRequest *request)
             { handleWebStart(request); });
 
-  // safetyTime = sok[0]["protection"].as <int> ();
-  // beeperFlag = sok[0]["beeper"].as <bool> ();
-  // sensorPressure = sok[0]["sensor"].as <int> ();
 
     myTime.end = 0;
     myTime.totalHour = 0;
@@ -286,18 +289,61 @@ void setup() {
 
 void loop() {
 
-  checkButtons();
+  // checkButtons();
   enc.tick();
+  startBtn.tick();
+  stopBtn.tick();
+  blinker.tick();
+
   // Обработка нажатия кнопки "Старт"
-  if (startButtonPressed) {
-    startButtonPressed = false; // Сбрасываем флаг после обработки
-    onStartButtonPressed();
+
+  if (startBtn.click() && !wasStartedFlag) { 
+  Serial.println("Кнопка 'Старт' нажата");
+  switch (currentScreen) {
+  case WIFIINFO: // если экран с WiFi, переходим на главный
+    currentScreen = MAIN;
+    tftMainScreen();
+    break; 
+  case ALARM:
+  case END:
+  case PRE_HEAT:
+  case PROCESS:
+    break;
+    // запускает процесс на других экранах
+  default:
+    blinker.stopBlink(); // останавливаем мигание
+    startHeating(); // запускаем разогрев
+    break;
+  }
   }
 
+  // if (startButtonPressed) {
+  //   startButtonPressed = false; // Сбрасываем флаг после обработки
+  //   onStartButtonPressed();
+  // }
+
   // Обработка нажатия кнопки "Стоп"
-  if (stopButtonPressed) {
-    stopButtonPressed = false; // Сбрасываем флаг после обработки
-    onStopButtonPressed();
+  // if (stopButtonPressed) {
+  //   stopButtonPressed = false; // Сбрасываем флаг после обработки
+  //   onStopButtonPressed();
+  // }
+
+  if (stopBtn.click()) {
+    switch (currentScreen)
+    {
+    case ALARM:
+    case END:
+      blinker.stopBlink();
+      tftMainScreen();
+      currentScreen = MAIN;
+      break;
+    default:
+      if (wasStartedFlag || preHeatStage) {
+      stopProcess();
+      endScreen();
+    }
+      break;
+    }
   }
   
   mySeed.updateSeed(chozenSeed);// обновляем класс MySeed регулярно
@@ -355,13 +401,17 @@ void loop() {
   case 80:
     pressureDivider = PRESSURE80;
     break;
+  
+  case 100:
+    pressureDivider = PRESSURE100;
+    break;
 
   default:
   pressureDivider = 1.0; // Значение по умолчанию
     break;
   }
 
-  blinker.tick();
+  
 
 
   /*
@@ -442,16 +492,6 @@ if (sensor.maxPress == 0 && sensor.minPress == 0 && wasStartedFlag) {
     mcp.digitalWrite(PUMP_ZERO, LOW);  // Убеждаемся что вторая помпа выключена
     pumpSwitchTmr.stop();  // Останавливаем таймер
 }
-  // старый алгоритм
-  // if (sensor.pressure >= sensor.maxPress && sensor.isFilled) {
-  //   pump_off();
-  //   sensor.isFilled = 0;
-  // } else if (sensor.pressure <= sensor.minPress && !sensor.isFilled && wasStartedFlag) {
-  //   if(sensor.minPress!=0) {
-  //     pump_on();
-  //     sensor.isFilled = 1;
-  //   }
-  // }
 
   if (sensor.temp >= sensor.maxTemp && sensor.isWarmed) {
     heat_off();
@@ -541,7 +581,7 @@ if (sensor.maxPress == 0 && sensor.minPress == 0 && wasStartedFlag) {
 
   }
 
-if (tempTimer.isReady()) sensor.temp = thermocouple.readCelsius();
+if (tempTimer.isReady()) sensor.temp = constrain(thermocouple.readCelsius(), 0, 1000);
 
   // Вывод в Serial
   if (timerSerialDelay.isReady() && DEBUG == 1) {
