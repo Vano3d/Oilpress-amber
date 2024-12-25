@@ -66,6 +66,8 @@ void startProcess() {
   Serial.print("Запущена культура № ");
   Serial.println(chozenSeed);
   processScreen();
+  // Включаем таймер отсчёта времени работы помпы, чтобы сработал аварийный режим
+  if (sensor.isFilled) pumpOnTmr.setTimeout(safetyTime*1000);
 }
 
 void stopProcess() {
@@ -75,7 +77,7 @@ void stopProcess() {
   sensor.isWarmed = 0;
   preHeatStage = 0;
   buzzFlag = 1; // будет писчать 3 раза
-  endTimer.setTimeout(100);
+  // endTimer.setTimeout(100);
   endFlag = 1;
   wasStartedFlag = 0;
   myTime.current = 0;

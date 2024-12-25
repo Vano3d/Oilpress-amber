@@ -293,6 +293,7 @@ void loop() {
   enc.tick();
   startBtn.tick();
   stopBtn.tick();
+  blinker.tick();
 
   // Обработка нажатия кнопки "Старт"
 
@@ -331,6 +332,7 @@ void loop() {
     switch (currentScreen)
     {
     case ALARM:
+    case END:
       blinker.stopBlink();
       tftMainScreen();
       currentScreen = MAIN;
@@ -409,7 +411,7 @@ void loop() {
     break;
   }
 
-  blinker.tick();
+  
 
 
   /*
@@ -490,16 +492,6 @@ if (sensor.maxPress == 0 && sensor.minPress == 0 && wasStartedFlag) {
     mcp.digitalWrite(PUMP_ZERO, LOW);  // Убеждаемся что вторая помпа выключена
     pumpSwitchTmr.stop();  // Останавливаем таймер
 }
-  // старый алгоритм
-  // if (sensor.pressure >= sensor.maxPress && sensor.isFilled) {
-  //   pump_off();
-  //   sensor.isFilled = 0;
-  // } else if (sensor.pressure <= sensor.minPress && !sensor.isFilled && wasStartedFlag) {
-  //   if(sensor.minPress!=0) {
-  //     pump_on();
-  //     sensor.isFilled = 1;
-  //   }
-  // }
 
   if (sensor.temp >= sensor.maxTemp && sensor.isWarmed) {
     heat_off();
