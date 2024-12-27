@@ -16,8 +16,5 @@
 #define PUMP_ZERO 2
 #define BLINK_LED 3 // stop/alarm led
 
-// #define START_BUTTON 4 // mcp
-// #define STOP_BUTTON 5 // mcp
-
 #define STARTBUTTON 32 // mcp
 #define STOPBUTTON 33 // mcp
