@@ -11,10 +11,16 @@
 #define DIO2 27
 #define BUZZER 13
 
-#define PUMP_LED 0
-#define HEAT_LED 1
-#define PUMP_ZERO 2
-#define BLINK_LED 3 // stop/alarm led
-
 #define STARTBUTTON 32 // mcp
 #define STOPBUTTON 33 // mcp
+
+// Выходы расширителя портов
+#define PUMP_LED 0 // реле и светодиод подачи давления
+#define HEAT_LED 1 // реле и светодиод тэна
+#define PUMP_ZERO 2 // реле и светодиод сброса давления
+#define BLINK_LED 3 // светодиод остановки/аварии
+
+// модуль термопары
+byte thermoDO = 16;
+byte thermoCS = 17;
+byte thermoCLK = 18;
