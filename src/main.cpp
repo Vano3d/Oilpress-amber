@@ -558,10 +558,18 @@ if (sensor.maxPress == 0 && sensor.minPress == 0 && wasStartedFlag) {
   // }
 
 // Если нажать Стоп дважды, потом зажать на третий раз, сбросятся настройки WIFi по умолчанию 
-  // if (stopBtn.step(2)) {
-  //   resetWiFi();
-  //   ESP.restart();
-  // } 
+  if (stopBtn.step(2)) {
+    switch (currentScreen)
+    {
+    case MAIN:
+      resetWiFi();
+      ESP.restart();
+      break;
+    default:
+      break;
+    }
+
+  } 
 
 // вывод информации на экране процесса
   if (currentScreen == PROCESS) {

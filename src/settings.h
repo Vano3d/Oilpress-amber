@@ -149,9 +149,7 @@ int currentStage;
 
 #include "max6675.h"
 
-byte thermoDO = 16;
-byte thermoCS = 17;
-byte thermoCLK = 18;
+
 
 MAX6675 thermocouple(thermoCLK, thermoCS, thermoDO);
 
