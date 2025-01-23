@@ -6,7 +6,7 @@ public:
     void updateSeed(byte seed) {
         chozenSeed = seed;
     }
-
+    // получение текущего этапа подогрева/давления    
     int getCurrentStage(long currentTime) {
         long accumulatedTime = 0;
         size_t stagesCount = length();
@@ -36,7 +36,7 @@ public:
     int time(byte number) {
         return doc[chozenSeed]["stages"][number]["time"].as<int>();
     }
-
+    // длина массива программы
     size_t length() const {
         return doc[chozenSeed]["stages"].size();
     }
@@ -60,6 +60,7 @@ private:
 };
 MySeed mySeed(0);
 
+// класс мигания светодиода для подключения оного на расширитель портов
 class MCPBlinker : public VirtBlinker {
    public:
     MCPBlinker(uint8_t pin) {
