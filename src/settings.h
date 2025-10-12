@@ -159,3 +159,5 @@ GTimer pumpSwitchTmr(MS);  // таймер для задержки перекл�
 
 MCPBlinker blinker(BLINK_LED);
 
+byte stopPressure = 12; // значение, когда сброс давления остановится. 
+// из-за особенностей гидравлики может быть больше 0

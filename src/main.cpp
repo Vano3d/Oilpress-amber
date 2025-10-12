@@ -470,7 +470,7 @@ if (sensor.maxPress == 0 && sensor.minPress == 0 && wasStartedFlag) {
     }
     
     if (pumpSwitchTmr.isReady()) {  // Ждем истечения таймера
-        if (sensor.pressure > 2) {
+        if (sensor.pressure > stopPressure) { // значение, когда сброс давления остановится
             mcp.digitalWrite(PUMP_ZERO, HIGH);  // Включаем вторую помпу
         } else {
             mcp.digitalWrite(PUMP_ZERO, LOW);   // Выключаем вторую помпу
