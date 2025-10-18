@@ -1,5 +1,5 @@
-// Программа для отжима масла
-// v 3.1
+// Программа для варки янтаря
+
 #include <Arduino.h>
 #include <GyverIO.h>
 #include <Wire.h>
