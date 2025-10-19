@@ -6,7 +6,7 @@
 #define PRESSURE80 33 // normal 33
 #define PRESSURE100 26.1 //
 #define FORMAT_IF_FAILED 1
-#define DEBUG 1
+#define DEBUG 0
 
 #define PROGS_ON_SCREEN 9 // количество программ на экране
 #define DIAPS_ON_SCREEN 8 // количество диапазонов на экране
@@ -21,7 +21,7 @@ const char* password = "1234567890";
 TM1637TinyDisplay display(CLK, DIO);
 TM1637TinyDisplay display2(CLK2, DIO2);
 
-GTimer timerIndicatorDelay(MS); 
+GTimer timerIndicatorDelay(MS); // частота обновления индикаторов
 GTimer timerSerialDelay(MS);
 GTimer timerProcess(MS);
 GTimer oledTimeout(MS);
@@ -46,7 +46,6 @@ Button startBtn(STARTBUTTON);
 
 // Blinker stopLed(STOPLED);
 
-// Adafruit_ADS1115 ads;
 ADS1115 ADS(0x48);
 
 bool endFlag = 0; // флаг окончания всего процесса

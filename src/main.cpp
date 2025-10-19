@@ -122,7 +122,7 @@ void setup() {
   enc.counter = 0; // сбросить счётчик энкодера
 
   timerSerialDelay.setInterval(500);
-  timerIndicatorDelay.setInterval(200);
+  timerIndicatorDelay.setInterval(100);
   processUpdTmr.setInterval(200);
   btnStatusCheck.setInterval(50);
   wifiStrengthTmr.setInterval(500);
@@ -133,6 +133,7 @@ void setup() {
   if (isADCConnected) {
   Serial.println("ADS connected :-)");
   ADS.setGain(1);
+  ADS.setDataRate(7);
 
  } else {
     Serial.println("Failed to initialize ADS.");
