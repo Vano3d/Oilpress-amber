@@ -6,7 +6,7 @@
 #define PRESSURE80 33 // normal 33
 #define PRESSURE100 26.1 //
 #define FORMAT_IF_FAILED 1
-#define DEBUG 0
+#define DEBUG 1
 
 #define PROGS_ON_SCREEN 9 // количество программ на экране
 #define DIAPS_ON_SCREEN 8 // количество диапазонов на экране
@@ -14,7 +14,7 @@
 float pressureDivider;
 byte safetyTime, beeperFlag, sensorPressure;
 
-const char* ssid = "maslobot1";  
+const char* ssid = "amberbot1";  
 const char* password = "1234567890";
 
 #include <TM1637TinyDisplay.h>
@@ -116,12 +116,12 @@ int cultCount;
 
 String factorySettings = "[{\"name\":\"Программа 1\",\"stages\":[{\"maxPress\":0,\"minPress\":0,\"maxTemp\":190,\"minTemp\":180,\"time\":10},{\"maxPress\":400,\"minPress\":390,\"maxTemp\":200,\"minTemp\":190,\"time\":10},{\"maxPress\":0,\"minPress\":0,\"maxTemp\":190,\"minTemp\":180,\"time\":2},{\"maxPress\":100,\"minPress\":80,\"maxTemp\":190,\"minTemp\":180,\"time\":480},{\"maxPress\":100,\"minPress\":80,\"maxTemp\":190,\"minTemp\":180,\"time\":120},{\"maxPress\":100,\"minPress\":80,\"maxTemp\":190,\"minTemp\":180,\"time\":120}]},{\"name\":\"Программа 2\",\"stages\":[{\"maxPress\":120,\"minPress\":80,\"maxTemp\":220,\"minTemp\":200,\"time\":10},{\"maxPress\":400,\"minPress\":390,\"maxTemp\":200,\"minTemp\":190,\"time\":10},{\"maxPress\":0,\"minPress\":0,\"maxTemp\":190,\"minTemp\":180,\"time\":2},{\"maxPress\":100,\"minPress\":80,\"maxTemp\":190,\"minTemp\":180,\"time\":480},{\"maxPress\":100,\"minPress\":80,\"maxTemp\":190,\"minTemp\":180,\"time\":120},{\"maxPress\":100,\"minPress\":80,\"maxTemp\":190,\"minTemp\":180,\"time\":150}]}]";
 
-String facttoryParams = "[{\"protection\": 12,\"beeper\": false, \"sensor\": 60, \"ssid\": \"name\", \"password\": \"password\"}]";
+String facttoryParams = "[{\"protection\": 12,\"beeper\": false, \"sensor\": 60, \"stopPressure\": 12, \"ssid\": \"name\", \"password\": \"password\"}]";
 
 
 bool isADCConnected, wasStartedStockUp, screenBeginFlag, webStartFlag, saveSetsFlag, preHeatStage;
 
-String dnsName = "maslobot";
+String dnsName = "amberbot";
 bool isConnectedToRouter;
 
 String getSensorReadings(){

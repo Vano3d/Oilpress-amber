@@ -157,6 +157,9 @@ void updParams() {
   safetyTime = sok[0]["protection"].as <int> ();
   beeperFlag = sok[0]["beeper"].as <bool> ();
   sensorPressure = sok[0]["sensor"].as <int> ();
+  if (sok[0].containsKey("stopPressure")) {
+    stopPressure = sok[0]["stopPressure"].as<int>();
+  }
 }
 
 void encRotate(bool isLeft) { 

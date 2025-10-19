@@ -88,7 +88,7 @@ void setup() {
 
   if (!mcp.begin_I2C()) {
     Serial.println("Error mcp start!");
-    while (1);
+    
   }
 
   mcp.pinMode(PUMP_LED, OUTPUT);
@@ -232,8 +232,6 @@ void setup() {
   
   server.begin();
 
-  Serial.println("mDNS responder started");
-  // Initialize mDNS
 
  if (!MDNS.begin(dnsName)) {
     Serial.println("Error setting up MDNS responder!");
@@ -608,7 +606,8 @@ if (tempTimer.isReady()) sensor.temp = constrain(thermocouple.readCelsius(), 0, 
     Serial.println(sensor.minTemp);
     Serial.print("preHeatStage: ");
     Serial.println(preHeatStage);
-
+    Serial.print("stopPressure: ");
+    Serial.println(stopPressure);
 
   }
   ws.cleanupClients();
