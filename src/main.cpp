@@ -51,6 +51,15 @@ String jsonParams;
 #include "myseed.h"
 #include "settings.h"
 #include "tft.h"
+
+// ===== Добавлено: глобальные переменные состояния логической ступени =====
+int logicalStage = 0;
+int lastLogicalStage = -1;
+bool pressureReached = false;
+bool tempReached = false;
+unsigned long stageTimerStartMs = 0;
+// ===== Конец добавления =====
+
 #include "funcs.h"
 
 
@@ -346,7 +355,10 @@ void loop() {
   }
   
   mySeed.updateSeed(chozenSeed);// обновляем класс MySeed регулярно
-  currentStage = mySeed.getCurrentStage(myTime.current);
+  // currentStage = mySeed.getCurrentStage(myTime.current);
+
+  // Используем логическую ступень, управляемую state-machine
+  currentStage = logicalStage;
 
   if (ADS.isBusy() == false)
   {
@@ -359,8 +371,8 @@ void loop() {
   // находим длину массива выбранной культуры
   arrayLen = mySeed.length();
 
-// находим всё время процесса - сумма всех времён в массиве
- myTime.end = mySeed.calcEndTime();
+  // находим всё время процесса - сумма всех времён в массиве
+  myTime.end = mySeed.calcEndTime();
 
   // находим оставшееся время процесса
   myTime.left = (myTime.end - myTime.current); 
@@ -387,7 +399,7 @@ void loop() {
   } 
 
 
-  // Коэффициены могут незначительно менять в зависимости от делителя
+  // Коэффициенты могут незначительно менять в зависимости от делителя
   switch (sensorPressure) {
   case 60:
     pressureDivider = PRESSURE60;
@@ -458,45 +470,8 @@ void loop() {
   */
   if (wasStartedFlag) myTime.current = millis() / 1000ul - myTime.beforeStart + continueTime;
 
-  // алгоритм сброса давления
-if (sensor.maxPress == 0 && sensor.minPress == 0 && wasStartedFlag) {
-    // Если оба значения давления равны нулю
-    pump_off();  // Выключаем основную помпу
-    sensor.isFilled = 0;
-    
-    if (!pumpSwitchTmr.isEnabled()) {
-        pumpSwitchTmr.setTimeout(1000);  // Устанавливаем задержку 1 с
-    }
-    
-    if (pumpSwitchTmr.isReady()) {  // Ждем истечения таймера
-        if (sensor.pressure > stopPressure) { // значение, когда сброс давления остановится
-            mcp.digitalWrite(PUMP_ZERO, HIGH);  // Включаем вторую помпу
-        } else {
-            mcp.digitalWrite(PUMP_ZERO, LOW);   // Выключаем вторую помпу
-        }
-    }
-} else {
-    // Стандартная логика контроля давления
-    if (sensor.pressure >= sensor.maxPress && sensor.isFilled) {
-        pump_off();
-        sensor.isFilled = 0;
-    } else if (sensor.pressure <= sensor.minPress && !sensor.isFilled && wasStartedFlag) {
-        if(sensor.minPress != 0) {
-            pump_on();
-            sensor.isFilled = 1;
-        }
-    }
-    mcp.digitalWrite(PUMP_ZERO, LOW);  // Убеждаемся что вторая помпа выключена
-    pumpSwitchTmr.stop();  // Останавливаем таймер
-}
-
-  if (sensor.temp >= sensor.maxTemp && sensor.isWarmed) {
-    heat_off();
-    sensor.isWarmed = 0;
-  } else if (sensor.temp <= sensor.minTemp && !sensor.isWarmed && wasStartedFlag) {
-    heat_on();
-    sensor.isWarmed = 1;
-  }
+  // Унифицированный контроль давления и температуры по логической ступени
+  processStageControl();
 
   // проходимся по массиву и меняем диапазон давлений по времени
     if (currentStage >= 0 && currentStage < mySeed.length()) {
@@ -619,7 +594,7 @@ if (tempTimer.isReady()) sensor.temp = constrain(thermocouple.readCelsius(), 0, 
   }
 
   checkPreHeat();
-
-  if (preHeatStage) pressureControlPreHeatMode();
+  // preHeatStage обрабатывается внутри startHeating/checkPreHeat, для основного процесса
+  // processStageControl() управляет логикой в процессе
 
 }

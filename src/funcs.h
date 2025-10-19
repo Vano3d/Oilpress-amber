@@ -59,6 +59,13 @@ void startProcess() {
   myTime.beforeStart = millis() / 1000ul;
   wasStartedFlag = 1;
 
+  // Сбрасываем логическую прогрессию ступеней при старте процесса
+  logicalStage = 0;
+  lastLogicalStage = -1;
+  pressureReached = false;
+  tempReached = false;
+  stageTimerStartMs = 0;
+
   blinker.stopBlink();
   currentScreen = PROCESS;
 
@@ -154,10 +161,11 @@ long calcEndTime(int seed) {
 }
 
 void updParams() {
-  safetyTime = sok[0]["protection"].as <int> ();
-  beeperFlag = sok[0]["beeper"].as <bool> ();
-  sensorPressure = sok[0]["sensor"].as <int> ();
-  if (sok[0].containsKey("stopPressure")) {
+  safetyTime = sok[0]["protection"].as<int>();
+  beeperFlag = sok[0]["beeper"].as<bool>();
+  sensorPressure = sok[0]["sensor"].as<int>();
+  // заменено: deprecated containsKey -> проверка через is<int>()
+  if (sok[0]["stopPressure"].is<int>()) {
     stopPressure = sok[0]["stopPressure"].as<int>();
   }
 }
@@ -255,82 +263,138 @@ void checkPreHeat() {
     }
 }
 
-void pressureControlPreHeatMode() {
-    if (sensor.pressure >= sensor.maxPress && sensor.isFilled) {
+// Универсальная функция контроля для текущей логической ступени
+void processStageControl() {
+  if (!wasStartedFlag) return; // управляем только в процессе
+  int totalStages = mySeed.length();
+  if (logicalStage < 0) logicalStage = 0;
+  if (logicalStage >= totalStages) return;
+
+  // при входе в новую ступень — сбрасываем внутренние флаги
+  if (logicalStage != lastLogicalStage) {
+    lastLogicalStage = logicalStage;
+    pressureReached = false;
+    tempReached = false;
+    stageTimerStartMs = 0;
+    Serial.print("Entered logical stage: ");
+    Serial.println(logicalStage);
+  }
+
+  // Получаем параметры текущей логической ступени
+  int maxP = mySeed.maxPress(logicalStage);
+  int minP = mySeed.minPress(logicalStage);
+  int maxT = mySeed.maxTemp(logicalStage);
+  int minT = mySeed.minTemp(logicalStage);
+  int durationSec = mySeed.time(logicalStage) * 60; // время в секундах
+
+  // ----- Управление давлением -----
+  if (maxP == 0 && minP == 0) {
+    // режим сброса давления: выключаем основной насос, включаем pumpZero при превышении stopPressure
+    pump_off();
+    sensor.isFilled = 0;
+    if (!pumpSwitchTmr.isEnabled()) pumpSwitchTmr.setTimeout(1000);
+    if (pumpSwitchTmr.isReady()) {
+      if (sensor.pressure > stopPressure) {
+        pumpZero_on();
+      } else {
+        pumpZero_off();
+      }
+    }
+    // считаем, что давление "достигнуто" когда фактическое давление упало до порога stopPressure или ниже
+    if (sensor.pressure <= stopPressure) {
+      pressureReached = true;
+    }
+  } else {
+    // поднятие до maxP: пока не достигли maxP -> включаем основной насос
+    if (!pressureReached) {
+      if (sensor.pressure < maxP) {
+        pump_on();
+      } else {
+        pump_off();
+        pressureReached = true;
+      }
+    } else {
+      // когда уже в режиме удержания — поддерживаем между maxP и minP
+      if (sensor.pressure >= maxP && sensor.isFilled) {
         pump_off();
         sensor.isFilled = 0;
-    } else if (sensor.pressure <= sensor.minPress && !sensor.isFilled) {
-        if(sensor.minPress != 0) {
-            pump_on();
-            sensor.isFilled = 1;
+      } else if (sensor.pressure <= minP && !sensor.isFilled) {
+        if (minP != 0) {
+          pump_on();
+          sensor.isFilled = 1;
         }
+      }
     }
+    // в обычном режиме вспомогательная помпа должна быть выключена
+    mcp.digitalWrite(PUMP_ZERO, LOW);
+    pumpSwitchTmr.stop();
+  }
+
+  // ----- Управление температурой -----
+  // Пока не достигли требуемой температуры — нагреваем до maxT
+  if (!tempReached) {
+    if (sensor.temp < maxT) {
+      heat_on();
+    } else {
+      heat_off();
+      tempReached = true;
+    }
+  } else {
+    // Поддерживаем температуру в пределах minT..maxT
+    if (sensor.temp >= maxT && sensor.isWarmed) {
+      heat_off();
+      sensor.isWarmed = 0;
+    } else if (sensor.temp <= minT && !sensor.isWarmed) {
+      heat_on();
+      sensor.isWarmed = 1;
+    }
+  }
+
+  // ----- Логика старта таймера и перехода ступеней -----
+  if (durationSec > 0) {
+    // стандартная ступень: запуск таймера только после достижения давления и температуры
+    if (pressureReached && tempReached) {
+      if (stageTimerStartMs == 0) {
+        stageTimerStartMs = millis();
+        Serial.print("Stage timer started for stage ");
+        Serial.println(logicalStage);
+      } else {
+        if ((millis() - stageTimerStartMs) >= (unsigned long)durationSec * 1000UL) {
+          // переход на следующую логическую ступень
+          logicalStage++;
+          if (logicalStage >= totalStages) {
+            // завершение процесса
+            stopProcess();
+            blinkHundredTimes();
+            endScreen();
+          } else {
+            // при переходе — сброс флагов (будет выполнено на следующем вызове)
+            Serial.print("Moving to next logical stage: ");
+            Serial.println(logicalStage);
+          }
+        }
+      }
+    }
+  } else {
+    // duration == 0 -> переходной/ожидательный режим (обычно охлождение)
+    // поведение: ждать понижения температуры до значения nextStage.maxTemp и затем перейти на следующую ступень
+    if (logicalStage + 1 < totalStages) {
+      int nextMaxT = mySeed.maxTemp(logicalStage + 1);
+      if (sensor.temp <= nextMaxT) {
+        // переходим на следующую логическую ступень; далее обычная логика поднимет/понизит давление в соответствии с новым этапом
+        logicalStage++;
+        Serial.print("Auto-advance to next stage after cooling: ");
+        Serial.println(logicalStage);
+      }
+    } else {
+      // если следующей ступени нет — считаем задачу завершённой
+      logicalStage++;
+    }
+  }
 }
 
-
-// Функция обработки нажатия кнопки Старт
-// void onStartButtonPressed() {
-//   Serial.println("Кнопка 'Старт' нажата");
-//   switch (currentScreen) {
-//   case WIFIINFO: // если экран с WiFi, переходим на главный
-//     currentScreen = MAIN;
-//     tftMainScreen();
-//     break; 
-//   case ALARM:
-//   case END:
-//   case PRE_HEAT:
-//   case PROCESS:
-//     break;
-//     // запускает процесс на других экранах
-//   default:
-//     blinker.stopBlink(); // останавливаем мигание
-//     // currentScreen = PROCESS; // меняем экран на PROCESS
-//     // startProcess(); // запускаем процесс
-//     startHeating(); // запускаем разогрев
-//     break;
-//   }
-// }
-
-
-
-// Функция обработки нажатия кнопки Стоп
-// void onStopButtonPressed() {
-//   Serial.println("Кнопка 'Стоп' нажата");
-//   if (wasStartedFlag || preHeatStage) {
-//     stopProcess();
-//     endScreen();
-//   }
-// }
-
-// void checkButtons() {
-//   static bool lastStartButtonState = HIGH;
-//   static bool lastStopButtonState = HIGH;
-
-//   // Проверка кнопки "Старт"
-//   bool currentStartButtonState = mcp.digitalRead(START_BUTTON);
-//   if (currentStartButtonState != lastStartButtonState) {
-//     unsigned long currentTime = millis();
-//     if ((currentTime - lastStartButtonTime) > DEBOUNCE_TIME) {
-//       lastStartButtonTime = currentTime;
-//       lastStartButtonState = currentStartButtonState;
-//       if (currentStartButtonState == LOW) { // Кнопка нажата
-//         startButtonPressed = true;
-//         Serial.println("Кнопка 'Старт' нажата");
-//       }
-//     }
-//   }
-
-//   // Проверка кнопки "Стоп"
-//   bool currentStopButtonState = mcp.digitalRead(STOP_BUTTON);
-//   if (currentStopButtonState != lastStopButtonState) {
-//     unsigned long currentTime = millis();
-//     if ((currentTime - lastStopButtonTime) > DEBOUNCE_TIME) {
-//       lastStopButtonTime = currentTime;
-//       lastStopButtonState = currentStopButtonState;
-//       if (currentStopButtonState == LOW) { // Кнопка нажата
-//         stopButtonPressed = true;
-//         Serial.println("Кнопка 'Стоп' нажата");
-//       }
-//     }
-//   }
-// }
+// Сохраняем старую функцию для совместимости (точка входа для preheat, если нужна)
+void pressureControlPreHeatMode() {
+  // В pre-heat режиме можно просто вызывать общую функцию, она учитывает wasStartedFlag
+  processStageControl();
+}

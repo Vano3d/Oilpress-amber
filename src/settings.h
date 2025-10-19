@@ -6,7 +6,7 @@
 #define PRESSURE80 33 // normal 33
 #define PRESSURE100 26.1 //
 #define FORMAT_IF_FAILED 1
-#define DEBUG 0
+#define DEBUG 0 
 
 #define PROGS_ON_SCREEN 9 // количество программ на экране
 #define DIAPS_ON_SCREEN 8 // количество диапазонов на экране
@@ -113,7 +113,7 @@ bool buzzFlag, continueFlag;
 unsigned int continueTime = 0;
 int cultCount;
 
-String factorySettings = "[{\"name\":\"Программа 1\",\"stages\":[{\"maxPress\":0,\"minPress\":0,\"maxTemp\":190,\"minTemp\":180,\"time\":10},{\"maxPress\":400,\"minPress\":390,\"maxTemp\":200,\"minTemp\":190,\"time\":10},{\"maxPress\":0,\"minPress\":0,\"maxTemp\":190,\"minTemp\":180,\"time\":2},{\"maxPress\":100,\"minPress\":80,\"maxTemp\":190,\"minTemp\":180,\"time\":480},{\"maxPress\":100,\"minPress\":80,\"maxTemp\":190,\"minTemp\":180,\"time\":120},{\"maxPress\":100,\"minPress\":80,\"maxTemp\":190,\"minTemp\":180,\"time\":120}]},{\"name\":\"Программа 2\",\"stages\":[{\"maxPress\":120,\"minPress\":80,\"maxTemp\":220,\"minTemp\":200,\"time\":10},{\"maxPress\":400,\"minPress\":390,\"maxTemp\":200,\"minTemp\":190,\"time\":10},{\"maxPress\":0,\"minPress\":0,\"maxTemp\":190,\"minTemp\":180,\"time\":2},{\"maxPress\":100,\"minPress\":80,\"maxTemp\":190,\"minTemp\":180,\"time\":480},{\"maxPress\":100,\"minPress\":80,\"maxTemp\":190,\"minTemp\":180,\"time\":120},{\"maxPress\":100,\"minPress\":80,\"maxTemp\":190,\"minTemp\":180,\"time\":150}]}]";
+String factorySettings = "[{\"name\":\"Программа 1\",\"stages\":[{\"maxPress\":15,\"minPress\":10,\"maxTemp\":140,\"minTemp\":135,\"time\":10},{\"maxPress\":100,\"minPress\":90,\"maxTemp\":195,\"minTemp\":190,\"time\":15},{\"maxPress\":0,\"minPress\":0,\"maxTemp\":195,\"minTemp\":190,\"time\":1},{\"maxPress\":190,\"minPress\":180,\"maxTemp\":228,\"minTemp\":220,\"time\":480},{\"maxPress\":140,\"minPress\":130,\"maxTemp\":165,\"minTemp\":160,\"time\":2},{\"maxPress\":115,\"minPress\":105,\"maxTemp\":135,\"minTemp\":130,\"time\":2},{\"maxPress\":0,\"minPress\":0,\"maxTemp\":105,\"minTemp\":100,\"time\":1}]},{\"name\":\"Программа 2\",\"stages\":[{\"maxPress\":120,\"minPress\":80,\"maxTemp\":220,\"minTemp\":200,\"time\":10},{\"maxPress\":400,\"minPress\":390,\"maxTemp\":200,\"minTemp\":190,\"time\":10},{\"maxPress\":0,\"minPress\":0,\"maxTemp\":190,\"minTemp\":180,\"time\":2},{\"maxPress\":100,\"minPress\":80,\"maxTemp\":190,\"minTemp\":180,\"time\":480},{\"maxPress\":100,\"minPress\":80,\"maxTemp\":190,\"minTemp\":180,\"time\":120},{\"maxPress\":100,\"minPress\":80,\"maxTemp\":190,\"minTemp\":180,\"time\":150}]}]";
 
 String facttoryParams = "[{\"protection\": 12,\"beeper\": false, \"sensor\": 60, \"stopPressure\": 12, \"ssid\": \"name\", \"password\": \"password\"}]";
 
