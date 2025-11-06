@@ -44,7 +44,7 @@ fontMetrics gFont = { nullptr, 0, 0, 0, 0, 0, 0, 0 };
 
 #ifdef FONT_FS_AVAILABLE
   fs::File fontFile;
-  fs::FS   &fontFS  = SPIFFS;
+  fs::FS   &fontFS  = LittleFS;
   bool     spiffs   = true;
   bool     fs_font = false;    // For ESP32/8266 use smooth font file or FLASH (PROGMEM) array
 
