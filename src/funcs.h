@@ -88,7 +88,7 @@ void stopProcess() {
   endFlag = 1;
   wasStartedFlag = 0;
   myTime.current = 0;
-  Serial.println("Отжим остановлен");
+  // Serial.println("Отжим остановлен");
   currentScreen = END;
 }
 
