@@ -131,7 +131,7 @@ void setup() {
   enc.counter = 0; // сбросить счётчик энкодера
 
   timerSerialDelay.setInterval(500);
-  timerIndicatorDelay.setInterval(100);
+  timerIndicatorDelay.setInterval(250);
   processUpdTmr.setInterval(200);
   btnStatusCheck.setInterval(50);
   wifiStrengthTmr.setInterval(500);
